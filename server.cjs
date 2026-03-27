@@ -1,9 +1,9 @@
-import express from "express";
-import cors from "cors"; // ✅ ADDED
-import path from "path";
-import YahooFinance from "yahoo-finance2";
-import axios from "axios";
-import dotenv from "dotenv";
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const YahooFinance = require("yahoo-finance2").default;
+const axios = require("axios");
+const dotenv = require("dotenv");
 dotenv.config();
 
 // Groq API Configuration
