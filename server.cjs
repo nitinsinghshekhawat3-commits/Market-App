@@ -3,16 +3,29 @@ const cors = require("cors");
 const path = require("path");
 const axios = require("axios");
 const dotenv = require("dotenv");
-dotenv.config();
+
+// Load environment variables
+try {
+  dotenv.config();
+  console.log('[INIT] Environment variables loaded');
+} catch (e) {
+  console.log('[INIT] No .env file found (ok in production)');
+}
 
 // Lazy load YahooFinance to avoid startup delays
 let yahooFinance = null;
 
 async function getYahooFinance() {
   if (!yahooFinance) {
-    console.log('Loading Yahoo Finance library...');
-    const YahooFinance = require("yahoo-finance2").default;
-    yahooFinance = new YahooFinance();
+    console.log('[INIT] Loading Yahoo Finance library...');
+    try {
+      const YahooFinance = require("yahoo-finance2").default;
+      yahooFinance = new YahooFinance();
+      console.log('[INIT] Yahoo Finance loaded successfully');
+    } catch (err) {
+      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
+      throw err;
+    }
   }
   return yahooFinance;
 }
@@ -21,12 +34,15 @@ async function getYahooFinance() {
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
+console.log('[STARTUP] Initializing Market App Server...');
+
 async function startServer() {
   try {
-    console.log('🚀 Starting Market App Server');
-    console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('PORT:', process.env.PORT || 3000);
-    console.log('API key configured:', !!process.env.GROQ_API_KEY);
+    const PORT = process.env.PORT || 3000;
+    console.log('[STARTUP] Configuration:');
+    console.log('  - PORT:', PORT);
+    console.log('  - NODE_ENV:', process.env.NODE_ENV || 'development');
+    console.log('  - GROQ_API_KEY:', GROQ_API_KEY ? 'SET' : 'MISSING');
     
     const app = express();
     const PORT = process.env.PORT || 3000;
@@ -300,43 +316,62 @@ Provide your response in valid JSON format only:
     }
   });
 
-  const server = app.listen(PORT, () => {
-    console.log(`
-╔════════════════════════════════════════╗
-║   🚀 Market App Server Started        ║
-╚════════════════════════════════════════╝
-  PORT: ${PORT}
-  Environment: ${process.env.NODE_ENV || 'development'}
-  Frontend: https://market-app-murex.vercel.app
-  Health Check: /health
-    `);
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    const time = new Date().toISOString();
+    console.log(`[${time}] ✅ SERVER STARTED SUCCESSFULLY`);
+    console.log(`[${time}] 📍 Listen on: 0.0.0.0:${PORT}`);
+    console.log(`[${time}] 🌐 Health check: /health`);
   });
 
+  // Handle server errors
   server.on('error', (err) => {
-    console.error('❌ Server error:', err);
+    console.error(`[ERROR] Server failed to start:`, err.message);
     if (err.code === 'EADDRINUSE') {
-      console.error(`Port ${PORT} is already in use`);
+      console.error(`  Port ${PORT} is already in use`);
     }
     process.exit(1);
   });
 
-  // Handle unhandled rejections
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Handle connection errors
+  app.use((err, req, res, next) => {
+    console.error(`[ERROR] Request failed:`, err.message);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: err.message 
+    });
   });
 
+  // Handle unhandled rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('[ERROR] Unhandled Rejection:', reason);
+  });
+
+  // Handle uncaught exceptions
   process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-    process.exit(1);
+    console.error('[ERROR] Uncaught Exception:', err.message);
+    // Don't exit - keep running
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('[SHUTDOWN] SIGTERM received, shutting down gracefully...');
+    server.close(() => {
+      console.log('[SHUTDOWN] Server closed');
+      process.exit(0);
+    });
   });
 
   } catch (error) {
-    console.error('❌ Failed to initialize server:', error);
-    process.exit(1);
+    console.error('[FATAL] Failed to initialize server:', error.message);
+    console.error(error.stack);
+    setTimeout(() => process.exit(1), 1000);
   }
 }
 
+// Start the server
+console.log('[STARTUP] Attempting to start server...');
 startServer().catch(error => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
+  console.error('[FATAL] Server startup failed:', error.message);
+  console.error(error.stack);
+  setTimeout(() => process.exit(1), 1000);
 });
