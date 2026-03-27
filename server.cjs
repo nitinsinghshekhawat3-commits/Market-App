@@ -45,7 +45,6 @@ async function startServer() {
     console.log('  - GROQ_API_KEY:', GROQ_API_KEY ? 'SET' : 'MISSING');
     
     const app = express();
-    const PORT = process.env.PORT || 3000;
 
   // Configure CORS - Allow all origins for frontend
   app.use(cors({
