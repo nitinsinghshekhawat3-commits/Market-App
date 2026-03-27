@@ -1,17 +1,8 @@
 [build]
-# Use Node 22 LTS
 nodeVersion = "22"
 
 [variables]
 NODE_ENV = "production"
-NPM_CONFIG_LOGLEVEL = "info"
-
-# Skip frontend build - only run backend
-[phases.setup]
-cmds = [
-  "npm install --prefer-offline --no-audit",
-  "echo 'Skipping frontend build - backend only'"
-]
 
 [phases.start]
 cmd = "node server.cjs"

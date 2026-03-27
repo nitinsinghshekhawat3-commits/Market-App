@@ -3,13 +3,11 @@
 /**
  * MINIMAL BACKEND SERVER
  * This works on Railway, Vercel, Heroku, or local
+ * No external dependencies required!
  */
 
 const http = require('http');
 const url = require('url');
-const dotenv = require('dotenv');
-
-dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
