@@ -1,13 +1,12 @@
 // API Configuration for Market App
-// Supports both development (localhost) and production (Vercel serverless backend)
+// Supports both development (localhost) and production (Railway/Vercel) environments
 
-// Use Vercel API routes instead of Railway
-const VERCEL_BACKEND_URL = 'https://market-app-murex.vercel.app/api';
+const RAILWAY_BACKEND_URL = 'https://market-app-production-05b2.up.railway.app';
 
 // Get base URL based on environment
 // Priority: VITE_API_URL > Environment detection
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.DEV ? 'http://localhost:3000' : VERCEL_BACKEND_URL);
+  (import.meta.env.DEV ? 'http://localhost:3000' : RAILWAY_BACKEND_URL);
 
 // Helper function to build full API URLs
 export function getApiUrl(path) {
@@ -28,64 +27,52 @@ export function getApiUrl(path) {
 // Common API endpoints
 export const API_ENDPOINTS = {
   // Stock data
-  STOCK: (symbol) => getApiUrl(`api/stocks/${symbol}`),
-
+  stocks: (symbol) => `/api/stocks/${symbol}`,
+  
   // Crypto data
-  CRYPTO: (id) => getApiUrl(`api/crypto/${id}`),
-
-  // Market data
-  MARKETS: getApiUrl('api/markets'),
-
+  crypto: (id) => `/api/crypto/${id}`,
+  
+  // Global markets
+  markets: '/api/markets',
+  
   // Search
-  SEARCH: (query) => getApiUrl(`api/search?q=${encodeURIComponent(query)}`),
-
+  search: '/api/search',
+  
   // Sectors
-  SECTORS: (country = 'US') => getApiUrl(`api/sectors?country=${country}`),
-
-  // Currency conversion
-  FX: getApiUrl('api/fx'),
-
+  sectors: '/api/sectors',
+  
+  // Currency conversion (FX)
+  fx: '/api/fx',
+  
   // Global sentiment
-  GLOBAL_SENTIMENT: getApiUrl('api/global-sentiment'),
-
-  // AI endpoints
-  AI_ANALYZE: getApiUrl('api/ai/analyze'),
+  sentiment: '/api/global-sentiment',
+  
+  // AI analysis
+  aiAnalyze: '/api/ai/analyze',
 };
 
-// Default headers for API requests
-export const API_HEADERS = {
-  'Content-Type': 'application/json',
-};
-
-// Helper function for making API requests with error handling
-export async function apiRequest(url, options = {}) {
+// Fetch data from API with error handling
+export async function fetchAPI(endpoint, options = {}) {
   try {
+    const url = typeof endpoint === 'string' && endpoint.startsWith('/') 
+      ? getApiUrl(endpoint) 
+      : endpoint;
+    
     const response = await fetch(url, {
-      headers: API_HEADERS,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
       ...options,
     });
 
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      throw new Error(`API Error: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error('[API] Request failed:', error);
+    console.error('API Fetch Error:', error);
     throw error;
   }
-}
-
-// Environment info for debugging
-export const API_CONFIG = {
-  isDevelopment: import.meta.env.DEV,
-  baseUrl: API_BASE_URL,
-  railwayUrl: RAILWAY_BACKEND_URL,
-  viteApiUrl: import.meta.env.VITE_API_URL,
-  viteApiBase: import.meta.env.VITE_API_BASE,
-};
-
-// Log configuration in development
-if (import.meta.env.DEV) {
-  console.log('[API CONFIG]', API_CONFIG);
 }

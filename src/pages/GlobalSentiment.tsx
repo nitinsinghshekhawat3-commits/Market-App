@@ -23,7 +23,6 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { getGlobalSentiment } from '../services/aiService';
-import { getApiUrl } from '../lib/apiConfig';
 import { cn } from '../lib/utils';
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -62,7 +61,7 @@ export const GlobalSentiment = () => {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(getApiUrl('api/global-sentiment'));
+      const res = await fetch('http://localhost:3000/api/global-sentiment');
       const data = await res.json();
       setMarketData(data);
 

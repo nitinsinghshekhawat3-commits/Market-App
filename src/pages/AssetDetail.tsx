@@ -5,7 +5,6 @@ import { useApp } from '../context/AppContext';
 import { PriceChart } from '../components/PriceChart';
 import { analyzeAsset, explainChart } from '../services/aiService';
 import { formatCurrency, formatCompactNumber, cn } from '../lib/utils';
-import { getApiUrl } from '../lib/apiConfig';
 import { getCompanyLogoUrl } from '../lib/logoMap';
 import { TrendingUp, TrendingDown, Shield, Zap, BarChart2, Info, Star, Check, Plus, MessageSquare, AlertTriangle, Lightbulb, Loader2, BrainCircuit, ChevronDown } from 'lucide-react';
 
@@ -42,7 +41,7 @@ export const AssetDetail = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(getApiUrl(`api/stocks/${symbol}`));
+        const res = await fetch(`http://localhost:3000/api/stocks/${symbol}`);
         const d = await res.json();
         setData(d);
         setLoading(false);

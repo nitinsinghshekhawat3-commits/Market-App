@@ -1,8 +1,0 @@
-[build]
-nodeVersion = "22"
-
-[variables]
-NODE_ENV = "production"
-
-[phases.start]
-cmd = "node server.cjs"

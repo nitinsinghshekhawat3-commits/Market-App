@@ -10,8 +10,6 @@ export interface Asset {
   exchange?: string;
 }
 
-import { getApiUrl } from '../lib/apiConfig';
-
 // Common crypto assets with CoinGecko IDs
 const CRYPTO_ASSETS: Asset[] = [
   { symbol: 'BTC-USD', name: 'Bitcoin', type: 'crypto' },
@@ -138,7 +136,7 @@ export async function searchAssets(query: string): Promise<Asset[]> {
 
   // Try to search via Yahoo Finance API for more results
   try {
-    const response = await fetch(getApiUrl(`api/search?q=${encodeURIComponent(q)}`));
+    const response = await fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(q)}`);
     if (response.ok) {
       const results = await response.json();
       

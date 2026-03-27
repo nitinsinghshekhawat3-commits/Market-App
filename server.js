@@ -7,26 +7,17 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Groq API Configuration
-const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const GROQ_API_KEY = process.env.VITE_GROQ_API_KEY || '';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const yahooFinance = new YahooFinance();
 
 async function startServer() {
-  console.log('Starting server...');
-  console.log('GROQ_API_KEY available:', !!process.env.GROQ_API_KEY);
-  console.log('PORT:', process.env.PORT || 3000);
-  
   const app = express();
-  const PORT = process.env.PORT || 3000;
+  const PORT = 3000;
 
   app.use(cors()); // ✅ ADDED
   app.use(express.json());
-
-  // Health check endpoint
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
 
   // 1. Stock Data (Yahoo Finance)
   app.get("/api/stocks/:symbol", async (req, res) => {
@@ -265,7 +256,4 @@ Provide your response in valid JSON format only:
   });
 }
 
-startServer().catch(error => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
-});
+startServer();
