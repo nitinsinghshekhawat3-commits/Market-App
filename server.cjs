@@ -22,39 +22,28 @@ async function startServer() {
     const app = express();
     const PORT = process.env.PORT || 3000;
 
-  // Configure CORS for production with Vercel frontend
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'https://market-app-murex.vercel.app',
-    /https:\/\/.*\.vercel\.app$/ // Match any vercel.app subdomain
-  ];
-  
+  // Configure CORS - Allow all origins for frontend
   app.use(cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile or curl requests)
-      if (!origin) return callback(null, true);
-      
-      // Check if origin matches allowed origins
-      const isAllowed = allowedOrigins.some(allowed => {
-        if (allowed instanceof RegExp) {
-          return allowed.test(origin);
-        }
-        return origin === allowed;
-      });
-      
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.warn('CORS request blocked for origin:', origin);
-        callback(null, true); // Allow anyway to prevent browser errors, but log it
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: false,
     maxAge: 3600
   }));
+
+  // Additional CORS headers middleware
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    res.header('Access-Control-Max-Age', '3600');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
   
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
