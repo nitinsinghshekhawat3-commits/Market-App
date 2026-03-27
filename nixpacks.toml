@@ -1,15 +1,16 @@
 [build]
-# Specify Node 20+ to meet package requirements
-nodeVersion = "20"
+# Use Node 22 LTS to satisfy all package requirements (>=22.12.0)
+nodeVersion = "22"
 
 [variables]
 NODE_ENV = "production"
+NPM_CONFIG_LOGLEVEL = "warn"
 
 [phases.setup]
-cmds = ["npm install"]
+cmds = ["npm cache clean --force", "npm install"]
 
 [phases.build]
-cmds = ["npm ci --only=production --no-cache"]
+cmds = ["npm ci --only=production"]
 
 [phases.start]
 cmd = "node server.cjs"

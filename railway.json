@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm ci --only=production --no-cache && npm install --no-cache"
+    "buildCommand": "npm ci --only=production"
   },
   "deploy": {
     "startCommand": "node server.cjs",
