@@ -1,0 +1,213 @@
+import React, { useState, useEffect } from 'react';
+import { MarketStrip, AssetCard, SectorPerformance } from '../components/DashboardComponents';
+import { useApp } from '../context/AppContext';
+import { Globe, Star, Zap, BarChart3, TrendingUp, TrendingDown, Activity, BrainCircuit } from 'lucide-react';
+import { cn, formatCurrency } from '../lib/utils';
+import { getCompanyLogoUrl } from '../lib/logoMap';
+import { Link } from 'react-router-dom';
+
+export const Dashboard = () => {
+  const { watchlist, isPro } = useApp();
+
+  const [trending, setTrending] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'stocks' | 'crypto'>('stocks');
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        setLoading(true);
+        
+        if (activeTab === 'stocks') {
+          // Fetch stock data
+          const symbols = ['AAPL', 'TSLA', 'NVDA', 'RELIANCE.NS', 'MSFT', 'GOOGL'];
+          const response = await Promise.all(
+            symbols.map(s => fetch(`http://localhost:3000/api/stocks/${s}`).then(res => res.json()).catch(() => null))
+          );
+          setTrending(response.filter(r => r && r.quote).map(r => r.quote));
+        } else {
+          // Fetch crypto data
+          const cryptoIds = ['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple', 'polkadot'];
+          const response = await Promise.all(
+            cryptoIds.map(id => fetch(`http://localhost:3000/api/crypto/${id}`).then(res => res.json()).catch(() => null))
+          );
+          setTrending(response.filter(r => r).map(r => ({
+            symbol: r.id.toUpperCase(),
+            shortName: r.name,
+            regularMarketPrice: r.market_data?.current_price?.usd || 0,
+            regularMarketChangePercent: r.market_data?.price_change_percentage_24h || 0,
+            currency: 'USD',
+            quoteType: 'CRYPTOCURRENCY'
+          })));
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+    fetchTrending();
+  }, [activeTab]);
+
+  return (
+    <div className="p-8 space-y-12">
+      <section>
+        <div className="flex items-center justify-between mb-8 px-4">
+          <h2 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+            <Globe className="w-8 h-8 text-primary" /> Global Markets
+          </h2>
+          <div className="flex items-center gap-2 px-4 py-1.5 bg-white/50 backdrop-blur-md rounded-full border border-white/50 shadow-sm">
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Updates</span>
+          </div>
+        </div>
+        <div className="glass-card !p-6">
+          <MarketStrip />
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 space-y-12">
+          <section>
+            <div className="flex items-center justify-between mb-8 px-4">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                <Zap className="w-6 h-6 text-amber-400" /> Market Movers
+              </h2>
+              <div className="flex gap-3 bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-white/50 shadow-sm">
+                <button 
+                  onClick={() => setActiveTab('stocks')}
+                  className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'stocks' ? 'bg-white text-primary shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Stocks
+                </button>
+                <button 
+                  onClick={() => setActiveTab('crypto')}
+                  className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'crypto' ? 'bg-white text-primary shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Crypto
+                </button>
+              </div>
+            </div>
+            
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-40 bg-white/50 animate-pulse rounded-[2.5rem] border border-white/50" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {trending.map((asset, index) => (
+                  <Link key={`${asset.symbol}-${index}`} to={`/asset/${asset.symbol}`}>
+                    <AssetCard asset={asset} />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="glass-dark rounded-[3rem] p-12 text-white relative overflow-hidden group">
+            <div className="relative z-10 max-w-lg">
+              <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary/10">
+                <BrainCircuit className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-4xl font-bold mb-6 leading-tight">AI Intelligence <br/>at your fingertips.</h3>
+              <p className="text-slate-400 text-lg mb-10 leading-relaxed">Get institutional-grade analysis for any asset worldwide using our advanced Gemini-powered engine.</p>
+              <button className="btn-primary-glass !px-10 !py-4 !text-base">
+                Try AI Analysis
+              </button>
+            </div>
+            <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full -mr-32 -mb-32 group-hover:bg-primary/20 transition-all duration-700" />
+            <div className="absolute left-1/2 top-0 w-64 h-64 bg-accent/10 blur-[100px] rounded-full group-hover:bg-accent/20 transition-all duration-700" />
+          </section>
+        </div>
+
+        <div className="space-y-10">
+          <section className="glass-card">
+            <h2 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-3">
+              <Star className="w-6 h-6 text-amber-400 fill-amber-400" /> Watchlist
+            </h2>
+            <div className="space-y-2">
+              
+              {/* ✅ FIXED (only this condition changed) */}
+              {watchlist.length === 0 ? (
+                <div className="text-center py-12 space-y-4">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                    <Star className="w-8 h-8 text-slate-200" />
+                  </div>
+                  <p className="text-sm text-slate-400 font-medium">Your watchlist is empty.</p>
+                </div>
+              ) : (
+                // Show only the last 3 recent stocks
+                watchlist.slice(-3).map((symbol) => (
+                 <WatchlistItem key={symbol} symbol={symbol} />
+                ))
+              )}
+            </div>
+          </section>
+
+          <section className="glass-card">
+            <SectorPerformance />
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+};
+const WatchlistItem = ({ symbol }: { symbol: string; key?: string }) => {
+  const { currency, fxRate } = useApp();
+  const [data, setData] = useState<any>(null);
+  const [fallbackLogoUrl, setFallbackLogoUrl] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => {
+    fetch(`http://localhost:3000/api/stocks/${symbol}`)
+      .then(res => res.json())
+      .then(d => {
+        setData(d.quote);
+        // If no Yahoo logo, fetch Google favicon as fallback
+        if (!d.quote.logoUrl) {
+          getCompanyLogoUrl(symbol).then(url => {
+            if (url) setFallbackLogoUrl(url);
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, [symbol]);
+
+  if (!data) return <div className="h-16 bg-white/30 animate-pulse rounded-2xl border border-white/20" />;
+
+  const isINR = data.currency === 'INR' || symbol.endsWith('.NS') || symbol.endsWith('.BO');
+  const logoUrl = data.logoUrl || fallbackLogoUrl;
+
+  return (
+    <Link to={`/asset/${symbol}`} className="flex items-center justify-between p-4 hover:bg-white/60 rounded-3xl transition-all group border border-transparent hover:border-white/50 hover:shadow-sm">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm overflow-hidden">
+          {logoUrl && !logoError ? (
+            <img
+              src={logoUrl}
+              alt={symbol}
+              className="w-full h-full object-contain p-1"
+              onError={() => setLogoError(true)}
+              loading="lazy"
+            />
+          ) : (
+            <span>{symbol.substring(0, 2)}</span>
+          )}
+        </div>
+        <div>
+          <p className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{symbol}</p>
+          <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{data.quoteType}</p>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-sm font-black text-slate-900">{formatCurrency(data.regularMarketPrice, currency, fxRate, isINR)}</p>
+        <p className={cn("text-[10px] font-black", data.regularMarketChangePercent >= 0 ? "text-primary" : "text-negative")}>
+          {data.regularMarketChangePercent >= 0 ? '+' : ''}{data.regularMarketChangePercent?.toFixed(2)}%
+        </p>
+      </div>
+    </Link>
+  );
+};
