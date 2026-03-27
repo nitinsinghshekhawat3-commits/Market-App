@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Globe, TrendingUp, TrendingDown, Star, LayoutDashboard, Compass, Newspaper, Settings, Menu, X, DollarSign, IndianRupee, User, LogOut, BrainCircuit, Camera, Crown } from 'lucide-react';
+import { Search, Globe, TrendingUp, TrendingDown, Star, LayoutDashboard, Compass, Newspaper, Settings, Menu, X, DollarSign, IndianRupee, User, LogOut, BrainCircuit, Camera, Crown, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { cn, formatCurrency, formatCompactNumber } from '../lib/utils';
 import { Link, useLocation } from 'react-router-dom';
@@ -133,6 +133,17 @@ export const Sidebar = () => {
                 >
                   <Camera className="w-3.5 h-3.5 text-white" />
                 </button>
+
+                {/* Delete Avatar Button */}
+                {user?.avatar && (
+                  <button
+                    onClick={removeAvatar}
+                    className="absolute bottom-0 left-0 bg-negative rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 duration-300"
+                    title="Delete profile photo"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-white" />
+                  </button>
+                )}
 
                 {/* Hidden file input */}
                 <input

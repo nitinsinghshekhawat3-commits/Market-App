@@ -45,10 +45,13 @@ export const Simulator = () => {
         return;
       }
 
+      // Detect if this is an Indian stock based on symbol (NSE: .NS, BSE: .BO)
+      const isIndianStock = asset.symbol.includes('.NS') || asset.symbol.includes('.BO');
+      
       setSelectedAsset({
         ...asset,
         price: d.quote.regularMarketPrice || 0,
-        currency: d.quote.currency || 'USD'
+        currency: isIndianStock ? 'INR' : 'USD'
       });
       setSearch(asset.symbol);
       setResults([]);
@@ -256,7 +259,7 @@ export const Simulator = () => {
                       <div className="text-right">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Est. Future Value</p>
                         <p className="text-3xl font-black text-slate-900 tracking-tight">
-                          {simulation?.estimatedValue ? formatCurrency(simulation.estimatedValue, currency, fxRate, (selectedAsset?.currency || 'USD') === 'INR') : '-'}
+                          {simulation?.estimatedValue ? formatCurrency(simulation.estimatedValue, currency, 1, false) : '-'}
                         </p>
                       </div>
                       <div className={cn(
