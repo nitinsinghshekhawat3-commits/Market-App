@@ -25,6 +25,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrency] = useState<Currency>('USD');
   const [fxRate, setFxRate] = useState(83.0);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  // Detect user's currency based on browser locale
+  useEffect(() => {
+    const detectCurrency = () => {
+      try {
+        const locale = navigator.language || 'en-US';
+        const region = new Intl.Locale(locale).region;
+
+        // Set currency based on region
+        if (region === 'IN') {
+          setCurrency('INR');
+        } else {
+          setCurrency('USD');
+        }
+      } catch (error) {
+        // Fallback to USD if detection fails
+        setCurrency('USD');
+      }
+    };
+
+    detectCurrency();
+  }, []);
   const [watchlist, setWatchlist] = useState<string[]>(() => {
     const saved = localStorage.getItem('aura_watchlist');
     return saved ? JSON.parse(saved) : ['AAPL', 'BTC-USD', 'RELIANCE.NS'];

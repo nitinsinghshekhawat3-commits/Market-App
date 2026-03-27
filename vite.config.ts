@@ -10,11 +10,7 @@ export default defineConfig(({mode}) => {
     define: {
       'process.env.VITE_GROQ_API_KEY': JSON.stringify(env.VITE_GROQ_API_KEY),
     },
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
+    publicDir: 'public',
     server: {      port: 5173,
       strictPort: true,      proxy: {
         '/api': {

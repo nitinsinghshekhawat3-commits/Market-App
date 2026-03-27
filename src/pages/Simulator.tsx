@@ -68,7 +68,13 @@ export const Simulator = () => {
     
     setLoading(true);
     try {
-      const result = await simulateScenario(selectedAsset.symbol, selectedAsset.price, scenario);
+      // Convert price to selected currency for AI analysis
+      const isSourceINR = selectedAsset.currency === 'INR';
+      const convertedPrice = currency === 'INR' && !isSourceINR ? selectedAsset.price * fxRate :
+                            currency === 'USD' && isSourceINR ? selectedAsset.price / fxRate :
+                            selectedAsset.price;
+
+      const result = await simulateScenario(selectedAsset.symbol, convertedPrice, scenario, currency);
       
       if (!result) {
         console.error('No result returned from simulator');

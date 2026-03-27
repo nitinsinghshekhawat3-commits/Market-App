@@ -27,6 +27,17 @@ export const AssetDetail = () => {
 
   // 🔽 ORIGINAL useEffect (UNCHANGED)
   useEffect(() => {
+    // Clear previous stock analysis state when symbol changes
+    setData(null);
+    setAnalysis(null);
+    setChartExplanation(null);
+    setSelectedPeriod('1Y');
+    setChartType('candlestick');
+    setFallbackLogoUrl(null);
+    setLogoError(false);
+    setAnalyzing(false);
+    setExplainingChart(false);
+
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -124,15 +135,24 @@ export const AssetDetail = () => {
   const handleAnalyze = async () => {
     if (!data) return;
     setAnalyzing(true);
-    const assetCurrency = isINR ? 'INR' : 'USD';
+
+    // Convert prices to selected currency for AI analysis
+    const isSourceINR = quote.currency === 'INR' || symbol?.endsWith('.NS') || symbol?.endsWith('.BO');
+    const convertedPrice = currency === 'INR' && !isSourceINR ? quote.regularMarketPrice * fxRate :
+                          currency === 'USD' && isSourceINR ? quote.regularMarketPrice / fxRate :
+                          quote.regularMarketPrice;
+    const convertedMarketCap = currency === 'INR' && !isSourceINR ? quote.marketCap * fxRate :
+                              currency === 'USD' && isSourceINR ? quote.marketCap / fxRate :
+                              quote.marketCap;
+
     const result = await analyzeAsset(symbol!, {
       name: quote.longName || quote.shortName,
-      price: quote.regularMarketPrice,
+      price: convertedPrice,
       change: quote.regularMarketChangePercent,
-      marketCap: quote.marketCap,
+      marketCap: convertedMarketCap,
       volume: quote.regularMarketVolume,
       summary: quote.longBusinessSummary
-    }, assetCurrency);
+    }, currency);
     setAnalysis(result);
     setAnalyzing(false);
   };
@@ -140,8 +160,26 @@ export const AssetDetail = () => {
   const handleExplainChart = async () => {
     if (!chartData.length) return;
     setExplainingChart(true);
-    const assetCurrency = isINR ? 'INR' : 'USD';
-    const result = await explainChart(symbol!, chartData, assetCurrency);
+
+    // Convert chart data prices to selected currency
+    const isSourceINR = quote.currency === 'INR' || symbol?.endsWith('.NS') || symbol?.endsWith('.BO');
+    const convertedChartData = chartData.map(point => ({
+      ...point,
+      open: currency === 'INR' && !isSourceINR ? point.open * fxRate :
+            currency === 'USD' && isSourceINR ? point.open / fxRate :
+            point.open,
+      high: currency === 'INR' && !isSourceINR ? point.high * fxRate :
+            currency === 'USD' && isSourceINR ? point.high / fxRate :
+            point.high,
+      low: currency === 'INR' && !isSourceINR ? point.low * fxRate :
+           currency === 'USD' && isSourceINR ? point.low / fxRate :
+           point.low,
+      close: currency === 'INR' && !isSourceINR ? point.close * fxRate :
+             currency === 'USD' && isSourceINR ? point.close / fxRate :
+             point.close
+    }));
+
+    const result = await explainChart(symbol!, convertedChartData, currency);
     setChartExplanation(result);
     setExplainingChart(false);
   };

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { createChart, ColorType, IChartApi, LineSeries } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, LineSeries, Time } from 'lightweight-charts';
 
 interface SmartTrendChartProps {
   data: any[];
@@ -81,7 +81,7 @@ export const SmartTrendChart: React.FC<SmartTrendChartProps> = ({
     // Add main price line
     const lineSeries = chart.addSeries(LineSeries, {
       color: '#00C896',
-      lineWidth: 2.5,
+      lineWidth: 2,
       crosshairMarkerVisible: true,
       lastValueVisible: true,
     });
@@ -97,7 +97,7 @@ export const SmartTrendChart: React.FC<SmartTrendChartProps> = ({
     if (smaData.length > 0) {
       const smaSeries = chart.addSeries(LineSeries, {
         color: 'rgba(59, 130, 246, 0.7)',
-        lineWidth: 1.5,
+        lineWidth: 1,
         lineStyle: 2,
         title: 'Trend',
         lastValueVisible: false,
@@ -158,13 +158,13 @@ export const SmartTrendChart: React.FC<SmartTrendChartProps> = ({
         if (!zoomRange) return;
 
         const zoomFactor = event.deltaY > 0 ? 1.1 : 0.9;
-        const range = zoomRange.to - zoomRange.from;
+        const range = (zoomRange.to as number) - (zoomRange.from as number);
         const newRange = range * zoomFactor;
         const diff = newRange - range;
 
         chart.timeScale().setVisibleRange({
-          from: zoomRange.from - diff / 2,
-          to: zoomRange.to + diff / 2,
+          from: ((zoomRange.from as number) - diff / 2) as Time,
+          to: ((zoomRange.to as number) + diff / 2) as Time,
         });
       }
     };
