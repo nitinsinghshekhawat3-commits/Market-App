@@ -1,0 +1,15 @@
+[build]
+# Specify Node 20+ to meet package requirements
+nodeVersion = "20"
+
+[variables]
+NODE_ENV = "production"
+
+[phases.setup]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["npm ci --only=production --no-cache"]
+
+[phases.start]
+cmd = "node server.cjs"
