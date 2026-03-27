@@ -1,13 +1,13 @@
 // API Configuration for Market App
-// Supports both development (localhost) and production (Railway/Vercel) environments
+// Supports both development (localhost) and production (Vercel serverless backend)
 
-const RAILWAY_BACKEND_URL = 'https://market-app-production-05b2.up.railway.app';
+// Use Vercel API routes instead of Railway
+const VERCEL_BACKEND_URL = 'https://market-app-murex.vercel.app/api';
 
 // Get base URL based on environment
-// Priority: VITE_API_URL > VITE_API_BASE > Environment detection
+// Priority: VITE_API_URL > Environment detection
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  import.meta.env.VITE_API_BASE || 
-  (import.meta.env.DEV ? 'http://localhost:3000' : RAILWAY_BACKEND_URL);
+  (import.meta.env.DEV ? 'http://localhost:3000' : VERCEL_BACKEND_URL);
 
 // Helper function to build full API URLs
 export function getApiUrl(path) {
