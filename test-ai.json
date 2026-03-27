@@ -1,0 +1,9 @@
+{
+  "symbol": "AAPL",
+  "data": {
+    "price": 250,
+    "change": 1.5,
+    "marketCap": "2.8T",
+    "volume": "45M"
+  }
+}
