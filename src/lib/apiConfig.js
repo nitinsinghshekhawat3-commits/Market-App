@@ -1,10 +1,13 @@
 // API Configuration for Market App
-// Supports both development (localhost) and production (Railway) environments
+// Supports both development (localhost) and production (Railway/Vercel) environments
 
 const RAILWAY_BACKEND_URL = 'https://market-app-production-05b2.up.railway.app';
 
 // Get base URL based on environment
-export const API_BASE_URL = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://localhost:3000' : RAILWAY_BACKEND_URL);
+// Priority: VITE_API_URL > VITE_API_BASE > Environment detection
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  import.meta.env.VITE_API_BASE || 
+  (import.meta.env.DEV ? 'http://localhost:3000' : RAILWAY_BACKEND_URL);
 
 // Helper function to build full API URLs
 export function getApiUrl(path) {
@@ -14,7 +17,11 @@ export function getApiUrl(path) {
   // Build full URL
   const fullUrl = `${API_BASE_URL}/${cleanPath}`;
 
-  console.log('[API] Request URL:', fullUrl);
+  // Only log in development
+  if (import.meta.env.DEV) {
+    console.log('[API]', cleanPath, '→', fullUrl);
+  }
+  
   return fullUrl;
 }
 
@@ -74,5 +81,11 @@ export const API_CONFIG = {
   isDevelopment: import.meta.env.DEV,
   baseUrl: API_BASE_URL,
   railwayUrl: RAILWAY_BACKEND_URL,
+  viteApiUrl: import.meta.env.VITE_API_URL,
   viteApiBase: import.meta.env.VITE_API_BASE,
 };
+
+// Log configuration in development
+if (import.meta.env.DEV) {
+  console.log('[API CONFIG]', API_CONFIG);
+}

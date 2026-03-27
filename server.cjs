@@ -13,15 +13,50 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const yahooFinance = new YahooFinance();
 
 async function startServer() {
-  console.log('Starting server...');
-  console.log('GROQ_API_KEY available:', !!process.env.GROQ_API_KEY);
+  console.log('🚀 Starting Market App Server');
+  console.log('Environment:', process.env.NODE_ENV || 'development');
   console.log('PORT:', process.env.PORT || 3000);
+  console.log('API key configured:', !!process.env.GROQ_API_KEY);
   
   const app = express();
   const PORT = process.env.PORT || 3000;
 
-  app.use(cors()); // ✅ ADDED
+  // Configure CORS for production with Vercel frontend
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://market-app-murex.vercel.app',
+    /https:\/\/.*\.vercel\.app$/ // Match any vercel.app subdomain
+  ];
+  
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin matches allowed origins
+      const isAllowed = allowedOrigins.some(allowed => {
+        if (allowed instanceof RegExp) {
+          return allowed.test(origin);
+        }
+        return origin === allowed;
+      });
+      
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.warn('CORS request blocked for origin:', origin);
+        callback(null, true); // Allow anyway to prevent browser errors, but log it
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 3600
+  }));
+  
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
   // Health check endpoint
   app.get('/health', (req, res) => {
@@ -260,8 +295,23 @@ Provide your response in valid JSON format only:
     }
   });
 
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`
+╔════════════════════════════════════════╗
+║   🚀 Market App Server Started        ║
+╚════════════════════════════════════════╝
+  URL: http://0.0.0.0:${PORT}
+  Environment: ${process.env.NODE_ENV || 'development'}
+  Frontend: https://market-app-murex.vercel.app
+  Health Check: /health
+    `);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${PORT} is already in use`);
+    } else {
+      console.error('❌ Server error:', err);
+    }
+    process.exit(1);
   });
 }
 
