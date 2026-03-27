@@ -1,16 +1,25 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const YahooFinance = require("yahoo-finance2").default;
 const axios = require("axios");
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Lazy load YahooFinance to avoid startup delays
+let yahooFinance = null;
+
+async function getYahooFinance() {
+  if (!yahooFinance) {
+    console.log('Loading Yahoo Finance library...');
+    const YahooFinance = require("yahoo-finance2").default;
+    yahooFinance = new YahooFinance();
+  }
+  return yahooFinance;
+}
+
 // Groq API Configuration
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
-const yahooFinance = new YahooFinance();
 
 async function startServer() {
   try {
@@ -56,15 +65,16 @@ async function startServer() {
   // 1. Stock Data (Yahoo Finance)
   app.get("/api/stocks/:symbol", async (req, res) => {
     try {
+      const yf = await getYahooFinance();
       const { symbol } = req.params;
-      const quote = await yahooFinance.quote(symbol);
-      const history = await yahooFinance.chart(symbol, {
+      const quote = await yf.quote(symbol);
+      const history = await yf.chart(symbol, {
         period1: "2023-01-01",
       });
 
       let logoUrl = null;
       try {
-        const summary = await yahooFinance.quoteSummary(symbol, { modules: ['summaryDetail'] });
+        const summary = await yf.quoteSummary(symbol, { modules: ['summaryDetail'] });
         if (summary && summary.summaryDetail && summary.summaryDetail.logoUrl) {
           logoUrl = summary.summaryDetail.logoUrl;
         }
@@ -97,8 +107,9 @@ async function startServer() {
   // 3. Global Markets / Indices
   app.get("/api/markets", async (req, res) => {
     try {
+      const yf = await getYahooFinance();
       const symbols = ["^GSPC", "^IXIC", "^NSEI", "BTC-USD", "ETH-USD"];
-      const quotes = await yahooFinance.quote(symbols);
+      const quotes = await yf.quote(symbols);
 
       if (Array.isArray(quotes)) {
         res.json(quotes);
@@ -117,10 +128,11 @@ async function startServer() {
   // 4. Search Autocomplete
   app.get("/api/search", async (req, res) => {
     try {
+      const yf = await getYahooFinance();
       const { q } = req.query;
       if (!q) return res.json([]);
 
-      const results = await yahooFinance.search(q);
+      const results = await yf.search(q);
       res.json(results.quotes || []);
 
     } catch (error) {
@@ -132,6 +144,7 @@ async function startServer() {
   // 5. Sector Performance
   app.get("/api/sectors", async (req, res) => {
     try {
+      const yf = await getYahooFinance();
       const { country = 'US' } = req.query;
 
       const sectorDefinitions = {
@@ -156,7 +169,7 @@ async function startServer() {
       const definition = sectorDefinitions[country] || sectorDefinitions.US;
       const symbols = definition.map(s => s.symbol);
 
-      const quotes = await yahooFinance.quote(symbols);
+      const quotes = await yf.quote(symbols);
       let quoteArray = Array.isArray(quotes) ? quotes : [quotes];
 
       const data = definition.map((sector, idx) => {
@@ -180,7 +193,8 @@ async function startServer() {
   // 6. Currency Conversion
   app.get("/api/fx", async (req, res) => {
     try {
-      const fx = await yahooFinance.quote("USDINR=X");
+      const yf = await getYahooFinance();
+      const fx = await yf.quote("USDINR=X");
       res.json({ rate: fx.regularMarketPrice || 83.0 });
     } catch {
       res.json({ rate: 83.0 });
@@ -190,6 +204,7 @@ async function startServer() {
   // 7. Global Sentiment
   app.get("/api/global-sentiment", async (req, res) => {
     try {
+      const yf = await getYahooFinance();
       const countryIndices = [
         { country: "USA", symbol: "^GSPC", indexName: "S&P 500" },
         { country: "India", symbol: "^NSEI", indexName: "NIFTY 50" },
@@ -197,7 +212,7 @@ async function startServer() {
       ];
 
       const symbols = countryIndices.map((c) => c.symbol);
-      const quotes = await yahooFinance.quote(symbols);
+      const quotes = await yf.quote(symbols);
 
       const results = countryIndices.map((item) => {
         const quote = quotes.find((q) => q.symbol === item.symbol);
