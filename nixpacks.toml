@@ -4,12 +4,15 @@ nodeVersion = "22"
 
 [variables]
 NODE_ENV = "production"
-NPM_CONFIG_LOGLEVEL = "warn"
+NPM_CONFIG_LOGLEVEL = "info"
 NPM_CONFIG_FUND = "false"
 NPM_CONFIG_AUDIT = "false"
 
 [phases.setup]
-cmds = ["npm install --prefer-offline --no-audit"]
+cmds = [
+  "npm install --prefer-offline --no-audit",
+  "npm list express cors"
+]
 
 [phases.start]
 cmd = "node server.cjs"
