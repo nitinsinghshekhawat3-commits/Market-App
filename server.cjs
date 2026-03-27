@@ -285,24 +285,36 @@ Provide your response in valid JSON format only:
     }
   });
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════╗
 ║   🚀 Market App Server Started        ║
 ╚════════════════════════════════════════╝
-  URL: http://0.0.0.0:${PORT}
+  PORT: ${PORT}
   Environment: ${process.env.NODE_ENV || 'development'}
   Frontend: https://market-app-murex.vercel.app
   Health Check: /health
     `);
-  }).on('error', (err) => {
+  });
+
+  server.on('error', (err) => {
+    console.error('❌ Server error:', err);
     if (err.code === 'EADDRINUSE') {
-      console.error(`❌ Port ${PORT} is already in use`);
-    } else {
-      console.error('❌ Server error:', err);
+      console.error(`Port ${PORT} is already in use`);
     }
     process.exit(1);
   });
+
+  // Handle unhandled rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+
+  process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    process.exit(1);
+  });
+
   } catch (error) {
     console.error('❌ Failed to initialize server:', error);
     process.exit(1);
