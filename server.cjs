@@ -13,13 +13,14 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const yahooFinance = new YahooFinance();
 
 async function startServer() {
-  console.log('🚀 Starting Market App Server');
-  console.log('Environment:', process.env.NODE_ENV || 'development');
-  console.log('PORT:', process.env.PORT || 3000);
-  console.log('API key configured:', !!process.env.GROQ_API_KEY);
-  
-  const app = express();
-  const PORT = process.env.PORT || 3000;
+  try {
+    console.log('🚀 Starting Market App Server');
+    console.log('Environment:', process.env.NODE_ENV || 'development');
+    console.log('PORT:', process.env.PORT || 3000);
+    console.log('API key configured:', !!process.env.GROQ_API_KEY);
+    
+    const app = express();
+    const PORT = process.env.PORT || 3000;
 
   // Configure CORS for production with Vercel frontend
   const allowedOrigins = [
@@ -313,6 +314,10 @@ Provide your response in valid JSON format only:
     }
     process.exit(1);
   });
+  } catch (error) {
+    console.error('❌ Failed to initialize server:', error);
+    process.exit(1);
+  }
 }
 
 startServer().catch(error => {
