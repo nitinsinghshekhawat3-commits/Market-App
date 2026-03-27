@@ -7,14 +7,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Groq API Configuration
-const GROQ_API_KEY = process.env.VITE_GROQ_API_KEY || '';
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const yahooFinance = new YahooFinance();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
   app.use(cors()); // ✅ ADDED
   app.use(express.json());
