@@ -5,6 +5,7 @@ import { formatCurrency, cn } from '../lib/utils';
 import { Search, Zap, BrainCircuit, TrendingUp, TrendingDown, AlertCircle, Info, ArrowRight, Loader2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
+import { getApiUrl } from '../lib/apiConfig';
 
 export const Simulator = () => {
   const { currency, fxRate } = useApp();
@@ -18,7 +19,7 @@ export const Simulator = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (search && !selectedAsset) {
-       fetch(`http://localhost:3000/api/search?q=${search}`)
+       fetch(getApiUrl(`api/search?q=${search}`))
           .then(res => res.json())
           .then(data => setResults(data))
           .catch(() => {});
@@ -33,7 +34,7 @@ export const Simulator = () => {
   const handleSelectAsset = async (asset: any) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/stocks/${asset.symbol}`);
+      const res = await fetch(getApiUrl(`api/stocks/${asset.symbol}`));
       if (!res.ok) throw new Error('Failed to fetch asset data');
       
       const d = await res.json();

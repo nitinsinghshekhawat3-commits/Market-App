@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getApiUrl } from '../lib/apiConfig';
 
 export interface SmartMoneySignal {
   id: string;
@@ -45,9 +46,9 @@ export async function fetchMarketMetrics(symbol: string, type: 'stock' | 'crypto
     if (type === 'crypto') {
       // Map symbol to CoinGecko ID
       const coinId = CRYPTO_SYMBOL_MAP[symbol] || symbol.toLowerCase().replace('-usd', '');
-      endpoint = `http://localhost:3000/api/crypto/${coinId}`;
+      endpoint = getApiUrl(`api/crypto/${coinId}`);
     } else {
-      endpoint = `http://localhost:3000/api/stocks/${symbol}`;
+      endpoint = getApiUrl(`api/stocks/${symbol}`);
     }
     
     const response = await axios.get(endpoint);

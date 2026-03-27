@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatCurrency, cn } from '../lib/utils';
+import { getApiUrl } from '../lib/apiConfig';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { motion } from 'motion/react';
 import { getCompanyLogoUrl } from '../lib/logoMap';
@@ -9,7 +10,7 @@ export const MarketStrip = () => {
   const { currency, fxRate } = useApp();
   const [markets, setMarkets] = useState<any[]>([]);
 useEffect(() => {
-  fetch('http://localhost:3000/api/markets')
+  fetch(getApiUrl('api/markets'))
     .then(res => res.json())
     .then(data => {
       console.log("MARKET DATA:", data);
@@ -84,7 +85,7 @@ export const SectorPerformance: React.FC<{ country?: string }> = ({ country = 'U
   const fetchSectors = async (countryCode: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/sectors?country=${countryCode}`);
+      const res = await fetch(getApiUrl(`api/sectors?country=${countryCode}`));
       const data = await res.json();
       setSectors(data);
     } catch (error) {

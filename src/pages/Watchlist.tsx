@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { AssetCard } from '../components/DashboardComponents';
 import { Link } from 'react-router-dom';
 import { Star, ArrowRight } from 'lucide-react';
+import { getApiUrl } from '../lib/apiConfig';
 
 export const Watchlist = () => {
   const { watchlist } = useApp();
@@ -17,7 +18,7 @@ export const Watchlist = () => {
       }
       try {
         const response = await Promise.all(
-          watchlist.map(s => fetch(`http://localhost:3000/api/stocks/${s}`).then(res => res.json()).catch(() => null))
+          watchlist.map(s => fetch(getApiUrl(`api/stocks/${s}`)).then(res => res.json()).catch(() => null))
         );
         setAssets(response.filter(r => r && r.quote).map(r => r.quote));
         setLoading(false);

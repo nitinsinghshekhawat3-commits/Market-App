@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getApiUrl } from '../lib/apiConfig';
 
 type Currency = 'USD' | 'INR';
 
@@ -59,10 +60,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const isPro = !!user;
 
   useEffect(() => {
-    fetch('/api/fx')
-      .then(res => res.json())
-      .then(data => setFxRate(data.rate))
-      .catch(() => {});
+    const fetchFxRate = async () => {
+      try {
+        const url = getApiUrl('api/fx');
+        console.log('[AppContext] Fetching FX rate from', url);
+        const res = await fetch(url);
+        const data = await res.json();
+        console.log('[AppContext] FX API response:', data);
+
+        let rate = 83.0;
+        if (data && typeof data.rate === 'number' && data.rate > 0) {
+          rate = data.rate;
+        }
+
+        console.log('[AppContext] Setting fxRate:', rate);
+        setFxRate(rate);
+      } catch (error) {
+        console.error('[AppContext] FX fetch failed:', error);
+        setFxRate(83.0);
+      }
+    };
+
+    fetchFxRate();
   }, []);
 
   useEffect(() => {

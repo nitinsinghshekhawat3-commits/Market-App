@@ -4,6 +4,22 @@ import { Link } from 'react-router-dom';
 import { Compass, TrendingUp, TrendingDown, Activity, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
+import { getApiUrl } from '../lib/apiConfig';
+
+// Map crypto symbols to CoinGecko IDs
+const CRYPTO_SYMBOL_MAP: Record<string, string> = {
+  'BTC-USD': 'bitcoin',
+  'BTC': 'bitcoin',
+  'ETH-USD': 'ethereum',
+  'ETH': 'ethereum',
+  'SOL-USD': 'solana',
+  'SOL': 'solana',
+  'BNB-USD': 'binancecoin',
+  'ADA-USD': 'cardano',
+  'XRP-USD': 'ripple',
+  'DOT-USD': 'polkadot',
+  'DOGE-USD': 'dogecoin'
+};
 
 export const Explore = () => {
   const [trending, setTrending] = React.useState<any[]>([]);
@@ -18,10 +34,26 @@ export const Explore = () => {
           ? ['AAPL', 'TSLA', 'NVDA', 'RELIANCE.NS', 'MSFT', 'GOOGL', 'AMZN', 'META']
           : ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'ADA-USD', 'XRP-USD', 'DOT-USD', 'DOGE-USD'];
         
-        const response = await Promise.all(
-          symbols.map(s => fetch(`http://localhost:3000/api/stocks/${s}`).then(res => res.json()).catch(() => null))
-        );
-        setTrending(response.filter(r => r && r.quote).map(r => r.quote));
+        if (category === 'Stocks') {
+          const response = await Promise.all(
+            symbols.map(s => fetch(getApiUrl(`api/stocks/${s}`)).then(res => res.json()).catch(() => null))
+          );
+          setTrending(response.filter(r => r && r.quote).map(r => r.quote));
+        } else {
+          // For crypto, map symbols to CoinGecko IDs
+          const cryptoIds = symbols.map(s => CRYPTO_SYMBOL_MAP[s] || s.toLowerCase().replace('-usd', ''));
+          const response = await Promise.all(
+            cryptoIds.map(id => fetch(getApiUrl(`api/crypto/${id}`)).then(res => res.json()).catch(() => null))
+          );
+          setTrending(response.filter(r => r).map(r => ({
+            symbol: r.id.toUpperCase(),
+            shortName: r.name,
+            regularMarketPrice: r.market_data?.current_price?.usd || 0,
+            regularMarketChangePercent: r.market_data?.price_change_percentage_24h || 0,
+            currency: 'USD',
+            quoteType: 'CRYPTOCURRENCY'
+          })));
+        }
         setLoading(false);
       } catch (error) {
         console.error(error);

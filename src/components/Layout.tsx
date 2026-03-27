@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Globe, TrendingUp, TrendingDown, Star, LayoutDashboard, Compass, Newspaper, Settings, Menu, X, DollarSign, IndianRupee, User, LogOut, BrainCircuit, Camera, Crown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { cn, formatCurrency, formatCompactNumber } from '../lib/utils';
+import { getApiUrl } from '../lib/apiConfig';
 import { Link, useLocation } from 'react-router-dom';
 import { UpgradeModal } from './UpgradeModal';
 
@@ -188,7 +189,7 @@ export const Topbar = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (search) {
-      fetch(`http://localhost:3000/api/search?q=${search}`)
+      fetch(getApiUrl(`api/search?q=${encodeURIComponent(search)}`))
           .then(res => res.json())
           .then(data => setResults(data))
           .catch(() => {});
