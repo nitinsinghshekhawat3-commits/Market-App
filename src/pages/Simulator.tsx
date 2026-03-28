@@ -18,7 +18,7 @@ export const Simulator = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (search && !selectedAsset) {
-       fetch(`http://localhost:3000/api/search?q=${search}`)
+       fetch(`/api/search?q=${search}`)
           .then(res => res.json())
           .then(data => setResults(data))
           .catch(() => {});
@@ -33,7 +33,7 @@ export const Simulator = () => {
   const handleSelectAsset = async (asset: any) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/stocks/${asset.symbol}`);
+      const res = await fetch(`/api/stocks/${asset.symbol}`);
       if (!res.ok) throw new Error('Failed to fetch asset data');
       
       const d = await res.json();

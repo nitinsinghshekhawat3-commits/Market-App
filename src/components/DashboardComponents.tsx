@@ -9,7 +9,7 @@ export const MarketStrip = () => {
   const { currency, fxRate } = useApp();
   const [markets, setMarkets] = useState<any[]>([]);
 useEffect(() => {
-  fetch('http://localhost:3000/api/markets')
+  fetch('/api/markets')
     .then(res => res.json())
     .then(data => {
       console.log("MARKET DATA:", data);
@@ -84,7 +84,7 @@ export const SectorPerformance: React.FC<{ country?: string }> = ({ country = 'U
   const fetchSectors = async (countryCode: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/sectors?country=${countryCode}`);
+      const res = await fetch(`/api/sectors?country=${countryCode}`);
       const data = await res.json();
       setSectors(data);
     } catch (error) {

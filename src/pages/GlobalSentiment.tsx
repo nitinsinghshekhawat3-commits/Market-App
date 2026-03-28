@@ -61,7 +61,7 @@ export const GlobalSentiment = () => {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/global-sentiment');
+      const res = await fetch('/api/global-sentiment');
       const data = await res.json();
       setMarketData(data);
 

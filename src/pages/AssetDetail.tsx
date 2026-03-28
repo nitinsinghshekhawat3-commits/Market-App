@@ -41,7 +41,7 @@ export const AssetDetail = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:3000/api/stocks/${symbol}`);
+        const res = await fetch(`/api/stocks/${symbol}`);
         const d = await res.json();
         setData(d);
         setLoading(false);

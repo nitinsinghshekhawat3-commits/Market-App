@@ -199,7 +199,7 @@ export const Topbar = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (search) {
-      fetch(`http://localhost:3000/api/search?q=${search}`)
+      fetch(`/api/search?q=${search}`)
           .then(res => res.json())
           .then(data => setResults(data))
           .catch(() => {});

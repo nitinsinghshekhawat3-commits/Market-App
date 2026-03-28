@@ -22,14 +22,14 @@ export const Dashboard = () => {
           // Fetch stock data
           const symbols = ['AAPL', 'TSLA', 'NVDA', 'RELIANCE.NS', 'MSFT', 'GOOGL'];
           const response = await Promise.all(
-            symbols.map(s => fetch(`http://localhost:3000/api/stocks/${s}`).then(res => res.json()).catch(() => null))
+            symbols.map(s => fetch(`/api/stocks/${s}`).then(res => res.json()).catch(() => null))
           );
           setTrending(response.filter(r => r && r.quote).map(r => r.quote));
         } else {
           // Fetch crypto data
           const cryptoIds = ['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple', 'polkadot'];
           const response = await Promise.all(
-            cryptoIds.map(id => fetch(`http://localhost:3000/api/crypto/${id}`).then(res => res.json()).catch(() => null))
+            cryptoIds.map(id => fetch(`/api/crypto/${id}`).then(res => res.json()).catch(() => null))
           );
           setTrending(response.filter(r => r).map(r => ({
             symbol: r.id.toUpperCase(),
@@ -162,7 +162,7 @@ const WatchlistItem = ({ symbol }: { symbol: string; key?: string }) => {
   const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/stocks/${symbol}`)
+    fetch(`/api/stocks/${symbol}`)
       .then(res => res.json())
       .then(d => {
         setData(d.quote);

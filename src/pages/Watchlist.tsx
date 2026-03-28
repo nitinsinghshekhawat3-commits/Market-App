@@ -17,7 +17,7 @@ export const Watchlist = () => {
       }
       try {
         const response = await Promise.all(
-          watchlist.map(s => fetch(`http://localhost:3000/api/stocks/${s}`).then(res => res.json()).catch(() => null))
+          watchlist.map(s => fetch(`/api/stocks/${s}`).then(res => res.json()).catch(() => null))
         );
         setAssets(response.filter(r => r && r.quote).map(r => r.quote));
         setLoading(false);

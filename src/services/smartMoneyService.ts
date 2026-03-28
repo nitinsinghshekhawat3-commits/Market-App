@@ -45,9 +45,9 @@ export async function fetchMarketMetrics(symbol: string, type: 'stock' | 'crypto
     if (type === 'crypto') {
       // Map symbol to CoinGecko ID
       const coinId = CRYPTO_SYMBOL_MAP[symbol] || symbol.toLowerCase().replace('-usd', '');
-      endpoint = `http://localhost:3000/api/crypto/${coinId}`;
+      endpoint = `/api/crypto/${coinId}`;
     } else {
-      endpoint = `http://localhost:3000/api/stocks/${symbol}`;
+      endpoint = `/api/stocks/${symbol}`;
     }
     
     const response = await axios.get(endpoint);
