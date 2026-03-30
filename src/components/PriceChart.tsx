@@ -154,13 +154,15 @@ export const PriceChart: React.FC<ChartProps> = ({
         if (!zoomRange) return;
 
         const zoomFactor = event.deltaY > 0 ? 1.1 : 0.9;
-        const range = zoomRange.to - zoomRange.from;
+        const from = Number(zoomRange.from as unknown as number);
+        const to = Number(zoomRange.to as unknown as number);
+        const range = to - from;
         const newRange = range * zoomFactor;
         const diff = newRange - range;
 
         chart.timeScale().setVisibleRange({
-          from: zoomRange.from - diff / 2,
-          to: zoomRange.to + diff / 2,
+          from: (from - diff / 2) as any,
+          to: (to + diff / 2) as any,
         });
       }
     };
