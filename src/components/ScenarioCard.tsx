@@ -124,7 +124,7 @@ export const ScenarioCard: React.FC<ScenarioCardProps> = ({
             <div className="flex items-center gap-4 text-sm">
               <div>
                 <p className="text-slate-500 text-xs font-semibold">Target</p>
-                <p className="font-bold text-slate-900">{formatCurrency(priceTarget, currency, fxRate, isINR)}</p>
+                <p className="font-bold text-slate-900">{formatCurrency(priceTarget, currency as 'USD' | 'INR', fxRate, isINR)}</p>
               </div>
               <div>
                 <p className="text-slate-500 text-xs font-semibold">Change</p>

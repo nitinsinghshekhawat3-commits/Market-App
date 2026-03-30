@@ -7,14 +7,14 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar, Topbar } from './components/Layout';
 import { PremiumFeaturesModal } from './components/PremiumFeaturesModal';
-import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
-import { AssetDetail } from './pages/AssetDetail';
-import { Explore } from './pages/Explore';
-import { Watchlist } from './pages/Watchlist';
-import { News } from './pages/News';
-import { Simulator } from './pages/Simulator';
-import { GlobalSentiment } from './pages/GlobalSentiment';
+import { Login } from './pages_legacy/Login';
+import { Dashboard } from './pages_legacy/Dashboard';
+import { AssetDetail } from './pages_legacy/AssetDetail';
+import { Explore } from './pages_legacy/Explore';
+import { Watchlist } from './pages_legacy/Watchlist';
+import { News } from './pages_legacy/News';
+import { Simulator } from './pages_legacy/Simulator';
+import { GlobalSentiment } from './pages_legacy/GlobalSentiment';
 
 function AppContent() {
   const location = useLocation();

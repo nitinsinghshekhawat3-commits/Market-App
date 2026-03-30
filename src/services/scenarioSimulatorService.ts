@@ -22,7 +22,7 @@ export function calculateVolatility(prices: number[]): number {
   if (prices.length < 2) return 0.1; // Default 10% if not enough data
 
   // Calculate returns
-  const returns = [];
+  const returns: number[] = [];
   for (let i = 1; i < prices.length; i++) {
     returns.push((prices[i] - prices[i - 1]) / prices[i - 1]);
   }

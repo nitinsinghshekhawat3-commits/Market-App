@@ -7,7 +7,7 @@ const layerMotion = {
     transition: {
       duration: 12,
       repeat: Infinity,
-      ease: 'easeInOut',
+      ease: 'easeInOut' as any,
     },
   },
 };
@@ -57,7 +57,7 @@ export const AnimatedBackground = () => {
             className="absolute rounded-xl border border-cyan-300/20 bg-cyan-300/10 backdrop-blur-md shadow-[0_0_30px_rgba(0,255,156,0.35)]"
             initial={{ opacity: 0, x: -120, y: 50 + idx * 70, scale: 0.6 }}
             animate={{ opacity: 0.35, x: 120 + (idx * 20), y: 40 + idx * 70, scale: 1.12 }}
-            transition={{ duration: 8 + idx * 1.2, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+            transition={{ duration: 8 + idx * 1.2, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' as any }}
           />
         ))}
       </AnimatePresence>
@@ -75,7 +75,7 @@ export const AnimatedBackground = () => {
             strokeLinecap="round"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: [0, 1], opacity: [0.2, 1] }}
-            transition={{ duration: 2.5, delay: p.delay, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
+            transition={{ duration: 2.5, delay: p.delay, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' as any }}
           />
         ))}
       </svg>

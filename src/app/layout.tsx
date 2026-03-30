@@ -1,6 +1,6 @@
-'use client';
 import type { Metadata } from 'next';
 import '../styles/globals.css';
+import { RootLayoutClient } from './layout-client';
 
 export const metadata: Metadata = {
   title: 'MarketStock AI Platform',
@@ -10,7 +10,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <RootLayoutClient>{children}</RootLayoutClient>
+      </body>
     </html>
   );
 }

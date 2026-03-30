@@ -48,10 +48,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     detectCurrency();
   }, []);
   const [watchlist, setWatchlist] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return ['AAPL', 'BTC-USD', 'RELIANCE.NS'];
     const saved = localStorage.getItem('aura_watchlist');
     return saved ? JSON.parse(saved) : ['AAPL', 'BTC-USD', 'RELIANCE.NS'];
   });
-  const [user, setUser] = useState<{ name: string; email: string } | null>(() => {
+  const [user, setUser] = useState<{ name: string; email: string; gender?: 'male' | 'female'; avatar?: string } | null>(() => {
+    if (typeof window === 'undefined') return null;
     const saved = localStorage.getItem('aura_user');
     return saved ? JSON.parse(saved) : null;
   });
@@ -66,16 +68,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     localStorage.setItem('aura_watchlist', JSON.stringify(watchlist));
   }, [watchlist]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (user) {
       localStorage.setItem('aura_user', JSON.stringify(user));
     }
   }, [user]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (user && !user.avatar) {
       const savedAvatar = localStorage.getItem('aura_user_avatar');
       if (savedAvatar) {
@@ -126,7 +131,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const base64String = reader.result as string;
         if (user) {
           setUser({ ...user, avatar: base64String });
-          localStorage.setItem('aura_user_avatar', base64String);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('aura_user_avatar', base64String);
+          }
         }
       };
       reader.readAsDataURL(file);
@@ -140,7 +147,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const removeAvatar = () => {
     if (user) {
       setUser({ ...user, avatar: undefined });
-      localStorage.removeItem('aura_user_avatar');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('aura_user_avatar');
+      }
     }
   };
 

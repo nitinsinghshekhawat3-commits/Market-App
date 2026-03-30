@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Menu, X, Globe } from 'lucide-react';
-import { Link } from 'next/navigation';
+import Link from 'next/link';
 
 export const LandingNav: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
