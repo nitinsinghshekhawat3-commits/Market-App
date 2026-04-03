@@ -85,7 +85,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
             'w-full rounded-2xl py-3 pl-12 pr-10 font-semibold focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all',
             theme === 'dark'
               ? 'bg-slate-800 border border-slate-600 text-slate-100 placeholder-slate-400'
-              : 'bg-white border border-slate-300 text-slate-900 placeholder-slate-500'
+              : 'bg-white/60 border border-white/80 text-slate-900 placeholder-slate-500'
           )}
         />
 
@@ -108,7 +108,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           'absolute top-full left-0 right-0 mt-2 rounded-2xl shadow-lg z-50 max-h-72 overflow-y-auto',
           theme === 'dark'
             ? 'bg-slate-950 border border-slate-700 text-slate-100'
-            : 'bg-white border border-slate-200 text-slate-900'
+            : 'bg-white/95 backdrop-blur-xl border border-white/80 text-slate-900'
         )}>
           {filteredAssets.length > 0 ? (
             <div className="py-2">
@@ -119,8 +119,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
                   className={cn(
                     'w-full flex items-center justify-between px-4 py-3 transition-all text-left border-b last:border-b-0 rounded-lg',
                     theme === 'dark'
-                      ? 'hover:!bg-emerald-900/30 border-slate-700 bg-slate-900/80'
-                      : 'hover:!bg-emerald-100 border-slate-100 bg-white',
+                      ? 'hover:bg-emerald-900/30 border-slate-700 bg-slate-900/80'
+                      : 'hover:bg-emerald-100 border-slate-100 bg-white/90',
                     selectedAsset === asset.symbol && (theme === 'dark' ? 'bg-emerald-900/30 border-l-4 border-emerald-400' : 'bg-emerald-100 border-l-4 border-emerald-500')
                   )}
                 >

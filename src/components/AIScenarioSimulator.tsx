@@ -279,9 +279,14 @@ export const AIScenarioSimulator: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h3 className={cn("text-2xl font-bold mb-2", theme === 'dark' ? "text-slate-100" : "text-slate-900")}>Market Intelligence Engine</h3>
+        <p className={cn("text-sm", theme === 'dark' ? "text-slate-400" : "text-slate-500")}>Institutional-grade analysis of market structure and price action</p>
+      </div>
       {/* Unified Search */}
       <div ref={containerRef} className="relative">
-        <label className={cn('block text-sm font-semibold mb-2', theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}>Select Asset</label>
+        <label className={cn("block text-xs font-black mb-3 uppercase tracking-widest", theme === 'dark' ? "text-white" : "text-slate-900")}>1. Select Asset</label>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
@@ -294,7 +299,7 @@ export const AIScenarioSimulator: React.FC = () => {
               setIsSearchOpen(true);
             }}
             onFocus={() => setIsSearchOpen(true)}
-            className={cn('w-full rounded-2xl px-4 pl-10 py-3 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all', theme === 'dark' ? 'bg-slate-700/60 border border-slate-600 text-slate-100 placeholder-slate-400' : 'bg-white border border-slate-300 text-slate-900')}
+            className={cn("w-full rounded-2xl px-4 pl-10 py-3 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all", theme === 'dark' ? "bg-slate-700/60 border border-slate-600 text-slate-100 placeholder-slate-400" : "bg-white/60 border border-white/80 text-slate-900")}
           />
           {searchQuery && (
             <button
@@ -311,79 +316,45 @@ export const AIScenarioSimulator: React.FC = () => {
 
         {/* Search Dropdown */}
         {isSearchOpen && (
-          <div className={cn("absolute top-full left-0 right-0 mt-2 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto", theme === 'dark' ? 'bg-slate-950 border border-slate-700 text-slate-100' : 'bg-white border border-slate-200 text-slate-900 shadow-lg')}>
+          <div className={cn("absolute top-full left-0 right-0 mt-2 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto", theme === 'dark' ? 'bg-slate-900/95 backdrop-blur-xl border border-slate-700' : 'bg-white/95 backdrop-blur-xl border border-white/80')}>
             {isSearching ? (
               <div className="px-4 py-6 text-center">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto text-slate-300" />
+                <Loader2 className="w-4 h-4 animate-spin mx-auto text-slate-400" />
                 <p className={cn("text-sm mt-2", theme === 'dark' ? 'text-slate-200' : 'text-slate-500')}>Searching...</p>
               </div>
             ) : searchResults.length > 0 ? (
               <div className="py-2 space-y-1">
-                {searchResults.map((asset) => {
-                  const isSelectedAsset = selectedAsset?.symbol === asset.symbol;
-                  return (
-                    <button
-                      key={`${asset.symbol}-${asset.type}`}
-                      onClick={() => {
-                        setSelectedAsset(asset);
-                        setSearchQuery('');
-                        setIsSearchOpen(false);
-                      }}
-                      className={cn(
-                        'w-full text-left px-4 py-3 transition-all border-l-4 rounded-xl',
-                        theme === 'dark'
-                          ? isSelectedAsset
-                            ? 'text-emerald-200 bg-emerald-900/30 border-emerald-400 hover:!bg-emerald-900/50 shadow-sm'
-                            : 'text-slate-100 bg-slate-900 border-slate-600 hover:!bg-emerald-900/30'
-                          : isSelectedAsset
-                            ? 'text-emerald-900 bg-emerald-100 border-emerald-500 hover:!bg-emerald-200 shadow-sm'
-                            : 'text-slate-900 bg-white border-slate-200 hover:!bg-emerald-100',
-                        isSelectedAsset ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent'
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <p
-                            className={cn(
-                              'font-semibold truncate max-w-[200px] text-sm',
-                              theme === 'dark'
-                                ? isSelectedAsset
-                                  ? 'text-emerald-200'
-                                  : 'text-emerald-100'
-                                : 'text-slate-900'
-                            )}
-                          >
-                            {asset.name}
-                          </p>
-                          <p
-                            className={cn(
-                              'text-xs truncate max-w-[200px] text-slate-300',
-                              theme === 'dark'
-                                ? isSelectedAsset
-                                  ? 'text-emerald-300'
-                                  : 'text-emerald-200'
-                                : 'text-slate-500'
-                            )}
-                          >
-                            {asset.symbol}
-                          </p>
-                        </div>
-                        <span
-                          className={cn(
-                            'flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap',
-                            theme === 'dark'
-                              ? isSelectedAsset
-                                ? 'bg-emerald-800/80 text-emerald-100 border border-emerald-600'
-                                : 'bg-emerald-800/80 text-emerald-100 border border-emerald-600'
-                              : 'bg-slate-100 text-slate-700 border border-slate-200'
-                          )}
-                        >
-                          {asset.type === 'crypto' ? 'Crypto' : 'Stock'}
-                        </span>
+                {searchResults.map(asset => (
+                  <button
+                    key={`${asset.symbol}-${asset.type}`}
+                    onClick={() => {
+                      setSelectedAsset(asset);
+                      setSearchQuery('');
+                      setIsSearchOpen(false);
+                    }}
+                    className={cn(
+                      'w-full text-left px-4 py-3 transition-all border-l-4 rounded-xl',
+                      theme === 'dark' ? 'text-slate-100 bg-slate-800/80 border-slate-700 hover:bg-slate-700' : 'text-slate-900 bg-white/80 border-white/80 hover:bg-slate-100',
+                      selectedAsset?.symbol === asset.symbol
+                        ? theme === 'dark' ? 'border-l-primary bg-primary/15' : 'border-l-primary bg-primary/10'
+                        : 'border-l-transparent'
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className={cn('font-semibold truncate max-w-[200px] text-sm', theme === 'dark' ? 'text-slate-100' : 'text-slate-900')}>{asset.name}</p>
+                        <p className={cn('text-xs truncate max-w-[200px]', theme === 'dark' ? 'text-slate-300' : 'text-slate-500')}>{asset.symbol}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                      <span className={cn(
+                        'flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap',
+                        theme === 'dark' ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-900',
+                        asset.type === 'crypto' ? (theme === 'dark' ? 'border border-blue-500' : 'border border-blue-200') : (theme === 'dark' ? 'border border-purple-500' : 'border border-purple-200')
+                      )}>
+                        {asset.type === 'crypto' ? 'Crypto' : 'Stock'}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
             ) : (
               <div className="px-4 py-6 text-center text-slate-500 text-sm">
@@ -395,12 +366,9 @@ export const AIScenarioSimulator: React.FC = () => {
 
         {/* Selected Asset Display */}
         {selectedAsset && !searchQuery && (
-          <div className={cn("mt-2 px-3 py-2 rounded-xl border flex items-center justify-between", theme === 'dark' ? 'bg-black/70 border-emerald-500 text-emerald-100' : 'bg-emerald-100 border-emerald-200 text-emerald-800')}>
-            <div>
-              <p className={cn('text-sm font-semibold', theme === 'dark' ? 'text-emerald-100' : 'text-emerald-800')}>{selectedAsset.name} ({selectedAsset.symbol})</p>
-              <p className={cn('text-xs font-medium', theme === 'dark' ? 'text-emerald-300' : 'text-emerald-600')}>{selectedAsset.type === 'crypto' ? 'Crypto' : 'Stock'}</p>
-            </div>
-            <span className={cn('text-xs font-semibold px-2 py-1 rounded-full', theme === 'dark' ? 'bg-emerald-800/80 text-emerald-100' : 'bg-emerald-200 text-emerald-800')}>{selectedAsset.type === 'crypto' ? 'Crypto' : 'Stock'}</span>
+          <div className={cn("mt-2 px-3 py-2 rounded-xl border flex items-center justify-between", theme === 'dark' ? 'bg-slate-700/50 border-slate-600' : 'bg-primary/10 border-primary/20')}>
+            <span className={cn("text-sm font-semibold", theme === 'dark' ? 'text-slate-100' : 'text-slate-900')}>{selectedAsset.name} ({selectedAsset.symbol})</span>
+            <span className={cn("text-xs font-medium", theme === 'dark' ? 'text-slate-300' : 'text-slate-500')}>{selectedAsset.type === 'crypto' ? 'Crypto' : 'Stock'}</span>
           </div>
         )}
       </div>
@@ -436,12 +404,14 @@ export const AIScenarioSimulator: React.FC = () => {
       {/* Market Intelligence Display */}
       {loading ? (
         <div className="space-y-3">
+          <label className={cn("block text-xs font-black mb-3 uppercase tracking-widest", theme === 'dark' ? "text-white" : "text-slate-900")}>2. Scenario Analysis</label>
           {[1, 2].map(i => (
             <div key={i} className="h-40 bg-slate-100 animate-pulse rounded-2xl" />
           ))}
         </div>
       ) : marketIntelligence ? (
         <div className="space-y-4">
+          <label className={cn("block text-xs font-black mb-3 uppercase tracking-widest", theme === 'dark' ? "text-white" : "text-slate-900")}>2. Scenario Analysis</label>
           {/* Main Market State Card */}
           <div className={cn(
             'border-2 rounded-2xl p-6 transition-all cursor-pointer hover:shadow-lg',
@@ -452,7 +422,7 @@ export const AIScenarioSimulator: React.FC = () => {
                 : marketIntelligence.market_state.includes('Bearish') || marketIntelligence.market_state === 'Trending Down' || marketIntelligence.market_state === 'Breakdown Risk'
                 ? 'bg-red-50 border-red-200'
                 : marketIntelligence.market_state === 'Accumulation'
-                ? 'bg-emerald-50 border-emerald-200'
+                ? 'bg-blue-50 border-blue-200'
                 : 'bg-amber-50 border-amber-200'
           )}
           onClick={() => setShowDetails(!showDetails)}
@@ -526,7 +496,7 @@ export const AIScenarioSimulator: React.FC = () => {
 
           {/* AI Validation (if available) */}
           {aiValidation && (
-            <div className={cn('rounded-2xl p-4 border-2', theme === 'dark' ? 'bg-slate-800/60 border-slate-600' : 'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200')}>
+            <div className={cn('rounded-2xl p-4 border-2', theme === 'dark' ? 'bg-slate-800/60 border-slate-600' : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200')}>
               <p className={cn('text-xs font-semibold mb-2', theme === 'dark' ? 'text-slate-200' : 'text-slate-700')}>AI Setup Validation</p>
               <p className={cn('text-sm mb-2', theme === 'dark' ? 'text-slate-100' : 'text-slate-600')}>
                 <span className="font-semibold">Setup Valid:</span> {aiValidation.setup_valid ? 'Yes' : 'No'}

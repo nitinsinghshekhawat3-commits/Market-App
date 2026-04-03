@@ -33,8 +33,20 @@ export const SmartMoneyTracker: React.FC = () => {
     return () => {};
   }, []);
 
-  // Get color based on signal sentiment
+  // Get color based on signal sentiment - theme aware
   const getSignalColor = (signal: string): string => {
+    if (theme === 'dark') {
+      switch (signal) {
+        case 'bullish':
+          return 'border-emerald-800 bg-emerald-950/35 hover:bg-emerald-950/50 hover:border-emerald-700';
+        case 'bearish':
+          return 'border-red-800 bg-red-950/35 hover:bg-red-950/50 hover:border-red-700';
+        case 'neutral':
+          return 'border-slate-700 bg-slate-800/40 hover:bg-slate-800/60 hover:border-slate-600';
+        default:
+          return 'border-slate-700 bg-slate-800/40 hover:bg-slate-800/60 hover:border-slate-600';
+      }
+    }
     switch (signal) {
       case 'bullish':
         return 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50';
@@ -47,43 +59,79 @@ export const SmartMoneyTracker: React.FC = () => {
     }
   };
 
-  // Get icon color based on signal
+  // Get icon color based on signal - theme aware
   const getIconColor = (signal: string): string => {
+    if (theme === 'dark') {
+      switch (signal) {
+        case 'bullish':
+          return 'bg-emerald-900/50 text-emerald-300 shadow-lg shadow-emerald-900/30';
+        case 'bearish':
+          return 'bg-red-900/50 text-red-300 shadow-lg shadow-red-900/30';
+        case 'neutral':
+          return 'bg-amber-900/50 text-amber-300 shadow-lg shadow-amber-900/30';
+        default:
+          return 'bg-slate-700/50 text-slate-300';
+      }
+    }
     switch (signal) {
       case 'bullish':
-        return 'bg-emerald-100 text-emerald-600';
+        return 'bg-emerald-100 text-emerald-700 shadow-md shadow-emerald-200/50';
       case 'bearish':
-        return 'bg-red-100 text-red-600';
+        return 'bg-red-100 text-red-700 shadow-md shadow-red-200/50';
       case 'neutral':
-        return 'bg-amber-100 text-amber-600';
+        return 'bg-amber-100 text-amber-700 shadow-md shadow-amber-200/50';
       default:
         return 'bg-slate-100 text-slate-600';
     }
   };
 
-  // Get badge color based on signal
+  // Get badge color based on signal - theme aware
   const getSignalBadge = (signal: string): string => {
+    if (theme === 'dark') {
+      switch (signal) {
+        case 'bullish':
+          return 'bg-emerald-900/40 text-emerald-300 border border-emerald-700/50 shadow-lg shadow-emerald-900/20';
+        case 'bearish':
+          return 'bg-red-900/40 text-red-300 border border-red-700/50 shadow-lg shadow-red-900/20';
+        case 'neutral':
+          return 'bg-amber-900/40 text-amber-300 border border-amber-700/50 shadow-lg shadow-amber-900/20';
+        default:
+          return 'bg-slate-700/40 text-slate-300';
+      }
+    }
     switch (signal) {
       case 'bullish':
-        return 'bg-emerald-100 text-emerald-700';
+        return 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-md shadow-emerald-200/60';
       case 'bearish':
-        return 'bg-red-100 text-red-700';
+        return 'bg-red-100 text-red-700 border border-red-200 shadow-md shadow-red-200/60';
       case 'neutral':
-        return 'bg-amber-100 text-amber-700';
+        return 'bg-amber-100 text-amber-700 border border-amber-200 shadow-md shadow-amber-200/60';
       default:
         return 'bg-slate-100 text-slate-700';
     }
   };
 
-  // Get confidence badge styling
+  // Get confidence badge styling - theme aware
   const getConfidenceBadge = (confidence: string): string => {
+    if (theme === 'dark') {
+      switch (confidence) {
+        case 'high':
+          return 'bg-emerald-900/40 text-emerald-300 border border-emerald-700/50 shadow-lg shadow-emerald-900/20';
+        case 'medium':
+          return 'bg-blue-900/40 text-blue-300 border border-blue-700/50 shadow-lg shadow-blue-900/20';
+        case 'low':
+          return 'bg-slate-700/40 text-slate-300 border border-slate-600/50';
+        default:
+          return 'bg-slate-700/40 text-slate-300';
+      }
+    }
     switch (confidence) {
       case 'high':
-        return 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+        return 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-md shadow-emerald-200/60';
       case 'medium':
-        return 'bg-blue-100 text-blue-700 border border-blue-200';
+        return 'bg-blue-100 text-blue-700 border border-blue-200 shadow-md shadow-blue-200/60';
       case 'low':
-        return 'bg-slate-100 text-slate-700 border border-slate-200';
+        return 'bg-slate-100 text-slate-700 border border-slate-200 shadow-md shadow-slate-200/40';
       default:
         return 'bg-slate-100 text-slate-700';
     }
@@ -168,10 +216,10 @@ export const SmartMoneyTracker: React.FC = () => {
               Smart Money Tracker
             </h3>
             {!loading && (
-              <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-full', theme === 'dark' ? 'bg-slate-700' : 'bg-blue-100')}>
-                <div className={cn('w-2 h-2 rounded-full', theme === 'dark' ? 'bg-emerald-400' : 'bg-blue-500')} />
-                <span className={cn('text-xs font-bold uppercase tracking-widest', theme === 'dark' ? 'text-slate-200' : 'text-blue-700')}>
-                  Last checked: {lastCheckedTime ? (() => {
+              <div className={cn('flex items-center gap-2 px-4 py-2 rounded-xl border', theme === 'dark' ? 'bg-slate-800/40 border-slate-700/50' : 'bg-blue-50/60 border-blue-200/50')}>
+                <div className={cn('w-2 h-2 rounded-full animate-pulse', theme === 'dark' ? 'bg-emerald-400' : 'bg-emerald-500')} />
+                <span className={cn('text-xs font-bold uppercase tracking-tight', theme === 'dark' ? 'text-slate-200' : 'text-slate-700')}>
+                  {lastCheckedTime ? (() => {
                     const diff = Date.now() - lastCheckedTime.getTime();
                     const minutes = Math.floor(diff / 60000);
                     const seconds = Math.floor((diff % 60000) / 1000);
@@ -219,7 +267,7 @@ export const SmartMoneyTracker: React.FC = () => {
 
       {/* Filter buttons */}
       {showFilters && (
-        <div className={cn('flex gap-2 p-3 rounded-2xl border', theme === 'dark' ? 'bg-slate-700/40 border-slate-600' : 'bg-white/40 border-white/60')}>
+        <div className={cn('flex gap-2 p-4 rounded-2xl border backdrop-blur-sm', theme === 'dark' ? 'bg-slate-800/30 border-slate-700/50' : 'bg-white/40 border-white/60')}>
           {(['all', 'crypto', 'stocks'] as const).map((cat) => (
             <button
               key={cat}
@@ -229,10 +277,12 @@ export const SmartMoneyTracker: React.FC = () => {
                 setTimeout(() => loadSignals(), 100);
               }}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all',
+                'px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all duration-200',
                 filter === cat
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                  : 'bg-white/60 text-slate-600 hover:bg-white/80'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                  : theme === 'dark'
+                  ? 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/60 hover:text-slate-300'
+                  : 'bg-white/60 text-slate-600 hover:bg-white/90'
               )}
             >
               {cat === 'all' ? 'All Markets' : cat === 'crypto' ? 'Crypto Only' : 'Stocks Only'}
@@ -242,29 +292,30 @@ export const SmartMoneyTracker: React.FC = () => {
       )}
 
       {/* Signal Cards */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-slate-100 animate-pulse rounded-2xl" />
+              <div key={i} className={cn("h-28 animate-pulse rounded-2xl", theme === 'dark' ? 'bg-slate-700/25' : 'bg-slate-100')} />
             ))}
           </div>
         ) : signals.length === 0 ? (
-          <div className="p-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-8 h-8 text-slate-300" />
+          <div className={cn("p-12 text-center border-2 border-dashed rounded-3xl backdrop-blur-sm", theme === 'dark' ? 'border-slate-700/40 bg-slate-800/20' : 'border-slate-200 bg-white/50')}>
+            <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", theme === 'dark' ? 'bg-slate-700/30' : 'bg-slate-100')}>
+              <Zap className={cn("w-8 h-8", theme === 'dark' ? 'text-slate-500' : 'text-slate-300')} />
             </div>
-            <p className="text-slate-600 font-semibold text-lg">Market Quiet</p>
-            <p className="text-slate-500 text-sm mt-1">Monitoring Smart Money...</p>
-            <p className="text-slate-400 text-xs mt-3">Last signal detected: {getLastSignalText()}</p>
+            <p className={cn("font-semibold text-lg", theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>Market Quiet</p>
+            <p className={cn("text-sm mt-1", theme === 'dark' ? 'text-slate-400' : 'text-slate-500')}>Monitoring Smart Money...</p>
+            <p className={cn("text-xs mt-3", theme === 'dark' ? 'text-slate-500' : 'text-slate-400')}>Last signal detected: {getLastSignalText()}</p>
           </div>
         ) : (
           signals.map((signal, index) => (
             <div
               key={signal.id}
               className={cn(
-                'relative border-2 rounded-2xl p-5 transition-all duration-300 group hover:shadow-lg hover:shadow-slate-200',
+                'relative border-2 rounded-2xl p-6 transition-all duration-300 group backdrop-blur-sm',
                 getSignalColor(signal.signal),
+                theme === 'dark' ? 'hover:shadow-2xl hover:shadow-slate-900/40' : 'hover:shadow-xl hover:shadow-slate-300/30',
                 signal.isNew && 'animate-pulse'
               )}
             >
@@ -273,11 +324,11 @@ export const SmartMoneyTracker: React.FC = () => {
                 <div className={cn('absolute inset-0 rounded-2xl border-2 animate-pulse pointer-events-none', getPulseBorderColor(signal.signal))} style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
               )}
 
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-5">
                 {/* Icon */}
                 <div
                   className={cn(
-                    'p-3 rounded-xl transition-all group-hover:scale-110 flex-shrink-0',
+                    'p-3 rounded-xl transition-all duration-300 group-hover:scale-110 flex-shrink-0',
                     getIconColor(signal.signal)
                   )}
                 >
@@ -292,37 +343,37 @@ export const SmartMoneyTracker: React.FC = () => {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <h4 className="font-bold text-slate-900 text-lg">{signal.assetName}</h4>
-                    <span className={cn('text-xs font-bold px-3 py-1 rounded-full', getSignalBadge(signal.signal))}>
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <h4 className={cn("font-bold text-lg tracking-tight", theme === 'dark' ? 'text-slate-50' : 'text-slate-950')}>{signal.assetName}</h4>
+                    <span className={cn('text-xs font-bold px-3 py-1.5 rounded-lg', getSignalBadge(signal.signal))}>
                       {signal.signal.toUpperCase()}
                     </span>
-                    <span className={cn('text-xs font-semibold px-3 py-1 rounded-full', getConfidenceBadge(signal.confidence))}>
-                      {signal.confidence.toUpperCase()} confidence
+                    <span className={cn('text-xs font-bold px-3 py-1.5 rounded-lg', getConfidenceBadge(signal.confidence))}>
+                      {signal.confidence.toUpperCase()}
                     </span>
                   </div>
 
-                  <p className="text-sm font-semibold text-slate-700 mb-3">
+                  <p className={cn("text-sm font-medium mb-4 tracking-tight", theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}>
                     {getSignalTypeLabel(signal.signalType)}
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-                    <div className="font-bold text-slate-900">
+                  <div className={cn("flex flex-wrap items-center gap-5 text-sm font-semibold", theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}>
+                    <div className={cn("font-bold text-lg", theme === 'dark' ? 'text-slate-50' : 'text-slate-950')}>
                       {formatAmount(signal.amount, signal.currency)}
                     </div>
                     {signal.percentage !== undefined && (
                       <div
                         className={cn(
-                          'font-bold',
-                          signal.percentage > 0 ? 'text-emerald-600' : signal.percentage < 0 ? 'text-red-600' : 'text-slate-600'
+                          'font-bold px-3 py-1 rounded-lg',
+                          signal.percentage > 0 ? theme === 'dark' ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-700' : signal.percentage < 0 ? theme === 'dark' ? 'bg-red-900/40 text-red-300' : 'bg-red-100 text-red-700' : theme === 'dark' ? 'bg-slate-700/40 text-slate-300' : 'bg-slate-100 text-slate-700'
                         )}
                       >
                         {signal.percentage > 0 ? '+' : ''}{signal.percentage.toFixed(2)}%
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5 text-slate-500 ml-auto">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-xs">{formatTime(signal.timestamp)}</span>
+                    <div className={cn("flex items-center gap-1.5 ml-auto text-xs font-medium", theme === 'dark' ? 'text-slate-400' : 'text-slate-500')}>
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{formatTime(signal.timestamp)}</span>
                     </div>
                   </div>
                 </div>
@@ -333,9 +384,9 @@ export const SmartMoneyTracker: React.FC = () => {
       </div>
 
       {/* Manual check indicator */}
-      <div className="flex items-center justify-center gap-2 text-xs text-slate-500 pt-2">
-        <div className="w-2 h-2 bg-blue-400 rounded-full" />
-        Click "Check Now" to fetch the latest signals and save API quota
+      <div className={cn("flex items-center justify-center gap-2 text-xs font-medium pt-2", theme === 'dark' ? 'text-slate-400' : 'text-slate-500')}>
+        <div className={cn("w-1.5 h-1.5 rounded-full", theme === 'dark' ? 'bg-blue-500' : 'bg-blue-400')} />
+        <span>Click "Check Now" to fetch the latest signals and save API quota</span>
       </div>
     </div>
   );
