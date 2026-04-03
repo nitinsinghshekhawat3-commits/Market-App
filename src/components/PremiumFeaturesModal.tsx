@@ -3,7 +3,6 @@ import { X, Zap, TrendingUp, BarChart3, Lock, Star, ChevronRight, Lightbulb } fr
 import { cn } from '../lib/utils';
 import { useApp } from '../context/AppContext';
 import { SmartMoneyTracker } from './SmartMoneyTracker';
-import { AIScenarioSimulator } from './AIScenarioSimulator';
 
 interface PremiumFeaturesModalProps {
   isOpen: boolean;
@@ -24,16 +23,6 @@ export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOp
       color: 'from-amber-400 to-orange-400',
       badge: 'Live',
       content: <SmartMoneyTracker />,
-      locked: false
-    },
-    {
-      id: 'scenario-simulator',
-      title: 'AI Scenario Simulator',
-      description: 'Generate bullish, bearish & sideways price scenarios with probability analysis',
-      icon: <Lightbulb className="w-6 h-6" />,
-      color: 'from-purple-400 to-pink-400',
-      badge: 'Live',
-      content: <AIScenarioSimulator />,
       locked: false
     },
     {
