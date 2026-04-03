@@ -18,3 +18,4 @@ AI-powered financial intelligence platform with real-time market data, advanced 
 3. Add environment variables in Vercel (GROQ_API_KEY, GROQ_MODEL, etc.).
 4. Push to GitHub and redeploy.
 
+\n# trigger redeploy
