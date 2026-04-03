@@ -1,25 +1,20 @@
-<<<<<<< HEAD
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/0a6a660d-bf40-43cd-b85b-bf50e2eccf72
+# Market-App
+AI-powered financial intelligence platform with real-time market data, advanced charts, and institutional-grade insights.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js 22+ and npm 10+
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Create `.env` or `.env.local` with required API keys (GROQ_API_KEY, GROQ_MODEL, etc.)
+3. Run:
    `npm run dev`
-=======
-# Market-App
-AI-powered financial intelligence platform with real-time market data, advanced charts, and institutional-grade insights.
->>>>>>> a5c74cded13a8caf5ef3f60e37dea283db4e77c9
+
+## Deploy to Vercel
+
+1. Set Vercel project to use the root directory.
+2. Verify `buildCommand` is `npm run build` and `outputDirectory` is `dist`.
+3. Add environment variables in Vercel (GROQ_API_KEY, GROQ_MODEL, etc.).
+4. Push to GitHub and redeploy.
+
