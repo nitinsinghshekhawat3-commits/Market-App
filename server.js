@@ -18,7 +18,7 @@ const usersByEmail = new Map();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(cors()); // ✅ ADDED
   app.use(express.json());
@@ -45,7 +45,7 @@ async function startServer() {
       res.json({ quote: { ...quote, logoUrl }, history });
 
     } catch (error) {
-      console.error("Stock API Error:", errors);
+      console.error("Stock API Error:", error);
       res.status(500).json({ error: "Failed to fetch stock data" });
     }
   });
