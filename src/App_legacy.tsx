@@ -34,11 +34,11 @@ function AppContent() {
   }
 
   return (
-    <div className={`min-h-screen ${isAuthPage ? 'bg-transparent' : theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-background text-text-rich'}`}>
+    <div className={`min-h-screen smooth-transition ${isAuthPage ? 'bg-transparent' : theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-background text-text-rich'}`}>
       {!isAuthPage && <Sidebar />}
       <div className={`${isAuthPage ? 'min-h-screen' : 'flex flex-col min-h-screen'}`}>
         {!isAuthPage && <Topbar />}
-        <main className={`${isAuthPage ? '' : 'ml-64 flex-1'}`}>
+        <main className={`${isAuthPage ? '' : 'max-sm:ml-0 md:ml-64 flex-1 smooth-transition'}`}>
           <Routes>
             <Route path="/login" element={<AdvancedLogin />} />
             <Route path="/dashboard" element={<Dashboard />} />

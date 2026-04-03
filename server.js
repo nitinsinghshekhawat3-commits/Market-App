@@ -45,7 +45,7 @@ async function startServer() {
       res.json({ quote: { ...quote, logoUrl }, history });
 
     } catch (error) {
-      console.error("Stock API Error:", error);
+      console.error("Stock API Error:", errors);
       res.status(500).json({ error: "Failed to fetch stock data" });
     }
   });

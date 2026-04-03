@@ -25,6 +25,7 @@ export const Sidebar = () => {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [tempName, setTempName] = useState('');
   const [tempEmail, setTempEmail] = useState('');
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [animationMode, setAnimationMode] = useState<'basic' | 'advanced'>(() => {
     if (typeof window === 'undefined') return 'basic';
     return (window.localStorage.getItem('marketstock_animation_mode') as 'basic' | 'advanced') || 'basic';
@@ -91,7 +92,7 @@ export const Sidebar = () => {
   };
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Globe, label: 'Global Sentiment', path: '/global-sentiment' },
     { icon: Compass, label: 'Explore', path: '/explore' },
     { icon: Star, label: 'Watchlist', path: '/watchlist' },
@@ -102,32 +103,34 @@ export const Sidebar = () => {
   return (
     <>
       <aside className={cn(
-          "w-64 h-[calc(100vh-2rem)] backdrop-blur-2xl flex flex-col fixed left-4 top-4 z-50 rounded-[2.5rem] shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]",
+          "w-64 h-[calc(100vh-2rem)] backdrop-blur-2xl flex flex-col fixed left-4 top-4 z-50 rounded-[2.5rem] shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] smooth-transition",
+          "max-sm:w-52 max-sm:left-2 max-sm:top-2",
           theme === 'dark' ? "bg-slate-900/80 border border-slate-700 text-slate-100" : "bg-white/40 border border-white/40 text-slate-800"
         )}>
-        <div className="p-8 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+        <div className="p-8 flex items-center gap-3 max-sm:p-4">
+          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
             <Globe className="text-white w-6 h-6" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-text-rich">Aura <span className="text-primary">Intel</span></span>
+          <span className="text-xl font-bold tracking-tight text-text-rich max-sm:text-base whitespace-nowrap">Aura <span className="text-primary">Intel</span></span>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-2">
+        <nav className="flex-1 px-4 py-4 space-y-2 max-sm:px-3 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.label}
               to={item.path}
+              onClick={() => setIsMobileOpen(false)}
               className={cn(
-                "flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden",
+                "flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden smooth-transition max-sm:px-3 max-sm:py-2.5",
                 location.pathname === item.path 
                   ? "bg-primary text-white shadow-lg shadow-primary/20 font-bold" 
-                  : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+                  : theme === 'dark' ? "text-slate-400 hover:bg-slate-700/50 hover:text-slate-100" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"
               )}
             >
-              <item.icon className={cn("w-5 h-5 relative z-10", location.pathname === item.path ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
-              <span className="relative z-10">{item.label}</span>
+              <item.icon className={cn("w-5 h-5 relative z-10 flex-shrink-0 max-sm:w-4 max-sm:h-4", location.pathname === item.path ? "text-white" : theme === 'dark' ? "text-slate-400 group-hover:text-slate-200" : "text-slate-500 group-hover:text-slate-700")} />
+              <span className="relative z-10 max-sm:text-sm">{item.label}</span>
               {location.pathname === item.path && (
-                <div className="absolute inset-0 bg-gradient-to-r from-primary to-emerald-400 opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary to-emerald-400 opacity-100 -z-0" />
               )}
             </Link>
           ))}

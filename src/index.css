@@ -18,12 +18,20 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-text-rich font-sans antialiased;
     background-image: 
       radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
       radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
     background-attachment: fixed;
+  }
+
+  * {
+    @apply transition-colors duration-200;
   }
 }
 
@@ -345,6 +353,176 @@
     filter: blur(38px);
     animation: flameFlicker 3.6s ease-in-out infinite reverse;
     pointer-events: none;
+  }
+
+  /* Smooth Animation Keyframes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /* Smooth Utility Classes */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideInUp 0.6s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideInDown 0.6s ease-out;
+  }
+
+  .animate-slide-left {
+    animation: slideInLeft 0.6s ease-out;
+  }
+
+  .animate-slide-right {
+    animation: slideInRight 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
+
+  .smooth-transition {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .smooth-transition-fast {
+    @apply transition-all duration-150 ease-out;
+  }
+
+  /* Responsive Utility Classes */
+  @media (max-width: 640px) {
+    .sidebar-responsive {
+      @apply fixed left-2 top-2 w-52 z-50;
+    }
+
+    .main-responsive {
+      @apply ml-0 w-full;
+    }
+
+    .card-responsive {
+      @apply p-4 rounded-xl;
+    }
+
+    .text-responsive-lg {
+      @apply text-lg;
+    }
+
+    .text-responsive-md {
+      @apply text-base;
+    }
+
+    .grid-responsive {
+      @apply grid-cols-1;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .grid-responsive {
+      @apply grid-cols-2;
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .grid-responsive {
+      @apply grid-cols-3;
+    }
+  }
+
+  /* Smooth scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.4);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.7);
   }
 }
 
