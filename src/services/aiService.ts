@@ -1,12 +1,7 @@
 /**
- * AI Service using Groq API (Free Tier)
- * Groq provides free API with generous limits
- * Get free API key: https://console.groq.com/keys
+ * AI Service (client-side wrapper calling backend AI endpoint)
+ * Backend endpoint is /api/ai and uses server-side GROQ_API_KEY.
  */
-
-const GROQ_API_KEY = (import.meta.env.VITE_GROQ_API_KEY || '') as string;
-const GROQ_MODEL = (import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile') as string;
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 let aiCallCounter = 0;
 let aiWindowStart = Date.now();
@@ -15,11 +10,6 @@ let aiDisabledUntil = 0;
 
 async function callGroqAPI(prompt: string): Promise<string> {
   try {
-    if (!GROQ_API_KEY) {
-      console.error('❌ GROQ_API_KEY not configured');
-      return '';
-    }
-
     const now = Date.now();
     if (now < aiDisabledUntil) {
       console.warn('AI requests temporarily disabled until', new Date(aiDisabledUntil).toLocaleTimeString());
@@ -39,51 +29,38 @@ async function callGroqAPI(prompt: string): Promise<string> {
 
     aiCallCounter += 1;
 
-    console.log('🔄 Calling Groq API...');
+    console.log('🔄 Calling local AI endpoint /api/ai ...');
 
-    const response = await fetch(GROQ_API_URL, {
+    const response = await fetch('/api/ai', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.8,
-        max_tokens: 2048,
-        top_p: 0.95,
-        stream: false,
-      })
+      body: JSON.stringify({ prompt }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Groq API error:', response.status, response.statusText, errorText);
+      console.error('❌ Local AI endpoint error:', response.status, response.statusText, errorText);
       if (response.status === 429) {
-        aiDisabledUntil = Date.now() + 60000; // temporary cooldown
+        aiDisabledUntil = Date.now() + 60000;
         console.warn('Too many requests, throttling AI for 60 seconds');
       }
       return '';
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    
+    const content = data.text || data.analysis || '';
+
     if (!content) {
-      console.error('❌ No content in Groq response:', data);
+      console.error('❌ No content in /api/ai response:', data);
       return '';
     }
 
-    console.log('✅ Groq API success:', content.substring(0, 150) + '...');
+    console.log('✅ /api/ai success:', content.substring(0, 150) + '...');
     return content;
   } catch (error) {
-    console.error('❌ Groq API fetch error:', error);
+    console.error('❌ /api/ai fetch error:', error);
     if (error instanceof Error && /429|Too Many Requests/i.test(error.message)) {
       aiDisabledUntil = Date.now() + 60000;
     }

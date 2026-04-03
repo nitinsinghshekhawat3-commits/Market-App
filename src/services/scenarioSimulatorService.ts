@@ -211,20 +211,6 @@ async function getAIEnhancedInsights(
   bearish: { reasoning: string; marketDrivers: string; keyRisk: string; outlook: string };
   sideways: { reasoning: string; marketDrivers: string; keyRisk: string; outlook: string };
 }> {
-  const GROQ_API_KEY = (typeof window !== 'undefined'
-    ? (import.meta.env.VITE_GROQ_API_KEY || '')
-    : (process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY || '')
-  ) as string;
-  const GROQ_MODEL = (typeof window !== 'undefined'
-    ? (import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile')
-    : (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile')
-  ) as string;
-  const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
-  if (!GROQ_API_KEY) {
-    throw new Error('Groq API key not configured');
-  }
-
   const prompt = `You are a professional financial analyst. Provide structured, data-driven insights for ${symbol}.
 
 Market Context:
@@ -260,33 +246,20 @@ Respond with ONLY valid JSON (no markdown, no code blocks):
 }`;
 
   try {
-    const response = await fetch(GROQ_API_URL, {
+    const response = await fetch('/api/ai', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1024,
-        top_p: 0.9,
-        stream: false,
-      })
+      body: JSON.stringify({ prompt }),
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw new Error(`AI endpoint error: ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    const content = data.text || data.analysis || '';
 
     // Try to extract JSON
     const jsonMatch = content.match(/\{[\s\S]*\}/);
