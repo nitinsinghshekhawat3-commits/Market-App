@@ -279,14 +279,6 @@ export const AIScenarioSimulator: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className={cn('rounded-2xl border-2 p-5 shadow-sm', theme === 'dark' ? 'border-emerald-400 bg-gradient-to-r from-emerald-950/80 via-emerald-900 to-black' : 'border-emerald-200 bg-gradient-to-r from-emerald-50 via-emerald-100 to-white')}>
-        <div className="inline-flex items-center gap-2 mb-3">
-          <span className={cn('inline-flex items-center uppercase tracking-wider text-xs font-bold rounded-full px-2 py-1', theme === 'dark' ? 'text-emerald-100 bg-emerald-700/30 border-emerald-400' : 'text-emerald-800 bg-emerald-100 border-emerald-200')}>AI POWERED</span>
-        </div>
-        <h3 className={cn('text-2xl font-extrabold leading-tight mb-2', theme === 'dark' ? 'text-emerald-200' : 'text-emerald-900')}>AI What-If Simulator</h3>
-        <p className={cn('text-sm font-medium', theme === 'dark' ? 'text-slate-200' : 'text-emerald-700')}>Test hypothetical market scenarios and see how they might impact your favorite assets.</p>
-      </div>
       {/* Unified Search */}
       <div ref={containerRef} className="relative">
         <label className={cn('block text-sm font-semibold mb-2', theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}>Select Asset</label>
