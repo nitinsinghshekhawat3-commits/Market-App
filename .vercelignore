@@ -49,4 +49,5 @@ tmpSectorCheck.mjs
 tmpSymbolCheck.js
 
 # Source files (compiled during build)
-src/
+# NOTE: src must NOT be ignored for Vite build in Vercel
+# src/

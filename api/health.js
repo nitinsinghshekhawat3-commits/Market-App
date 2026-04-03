@@ -11,5 +11,10 @@ export default function handler(req, res) {
     return;
   }
 
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    commit: process.env.COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || 'unknown',
+    gitBranch: process.env.VERCEL_GIT_COMMIT_REF || process.env.GIT_BRANCH || 'unknown',
+  });
 }
