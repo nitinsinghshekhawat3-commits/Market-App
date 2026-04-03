@@ -11,8 +11,22 @@ export default defineConfig(({mode}) => {
       'process.env.VITE_GROQ_API_KEY': JSON.stringify(env.VITE_GROQ_API_KEY),
     },
     publicDir: 'public',
-    server: {      port: 5173,
-      strictPort: true,      proxy: {
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      minify: 'terser',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor': ['react', 'react-dom', 'react-router-dom'],
+          },
+        },
+      },
+    },
+    server: {
+      port: 5173,
+      strictPort: true,
+      proxy: {
         '/api': {
           target: 'http://localhost:3000',
           changeOrigin: true,

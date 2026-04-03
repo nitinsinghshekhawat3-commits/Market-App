@@ -3,17 +3,45 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "nodeVersion": "20.x",
+  "framework": "vite",
   "env": {
     "VITE_GROQ_API_KEY": "@vite_groq_api_key",
     "VITE_API_URL": "@vite_api_url",
     "VITE_GOOGLE_CLIENT_ID": "@vite_google_client_id",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "GROQ_API_KEY": "@groq_api_key",
+    "GROQ_MODEL": "@groq_model"
   },
-  "framework": "vite",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "src": "api/**/*.js",
+      "use": "@vercel/node",
+      "config": {
+        "nodeVersion": "20.x"
+      }
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  }
 }
