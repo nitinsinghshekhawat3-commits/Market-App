@@ -7,7 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { motion, AnimatePresence } from 'motion/react';
 
 export const Simulator = () => {
-  const { currency, fxRate } = useApp();
+  const { currency, fxRate, theme } = useApp();
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
@@ -110,14 +110,22 @@ export const Simulator = () => {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12">
+    <div className={cn(
+      'p-8 max-w-7xl mx-auto space-y-12 min-h-screen',
+      theme === 'dark' ? 'bg-[#0F172A] text-[#E5E7EB]' : 'bg-white text-slate-900'
+    )}>
       <header className="text-center space-y-6">
-        <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-primary/10 rounded-2xl text-primary font-black text-[10px] uppercase tracking-widest shadow-sm">
-          <BrainCircuit className="w-4 h-4" /> AI Powered
+        <div className={cn(
+          'inline-flex items-center gap-3 px-6 py-2.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm border',
+          theme === 'dark'
+            ? 'bg-emerald-900/90 text-emerald-100 border-emerald-700' 
+            : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+        )}>
+          <BrainCircuit className={cn('w-4 h-4', theme === 'dark' ? 'text-emerald-200' : 'text-emerald-700')} /> AI Powered
         </div>
-        <h1 className="text-5xl font-black text-slate-900 tracking-tighter">AI What-If Simulator</h1>
-        <p className="text-slate-500 max-w-2xl mx-auto font-bold text-lg leading-relaxed">
-          Test hypothetical market scenarios and see how they might impact your favorite assets. 
+        <h1 className={cn('text-5xl font-black tracking-tighter', theme === 'dark' ? 'text-[#F8FAFC]' : 'text-slate-900')}>AI What-If Simulator</h1>
+        <p className={cn('max-w-2xl mx-auto font-bold text-lg leading-relaxed', theme === 'dark' ? 'text-[#CBD5E1]' : 'text-slate-500')}>
+          Test hypothetical market scenarios and see how they might impact your favorite assets.
           Powered by advanced generative intelligence.
         </p>
       </header>
@@ -130,12 +138,17 @@ export const Simulator = () => {
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Select Asset</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-slate-400" />
+                  <Search className={cn('h-5 w-5', theme === 'dark' ? 'text-[#E5E7EB]' : 'text-slate-400')} />
                 </div>
                 <input
                   type="text"
                   placeholder="Search symbol (e.g. AAPL)"
-                  className="w-full bg-white/50 backdrop-blur-md border border-white/50 rounded-2xl py-4 pl-12 pr-5 text-sm font-bold focus:ring-4 focus:ring-primary/10 transition-all outline-none shadow-inner"
+                  className={cn(
+                    'w-full border rounded-2xl py-4 pl-12 pr-5 text-sm font-semibold focus:ring-2 transition-all outline-none shadow-inner',
+                    theme === 'dark'
+                      ? 'bg-[#111827] border-[#334155] text-[#F8FAFC] placeholder-[#94A3B8] focus:ring-cyan-500/40'
+                      : 'bg-white/50 border-white/50 text-slate-900 placeholder-slate-400 focus:ring-primary/10'
+                  )}
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
@@ -143,18 +156,18 @@ export const Simulator = () => {
                   }}
                 />
                 {results.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-4 bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden z-50 py-3 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="absolute top-full left-0 right-0 mt-4 bg-[#0F172A] border border-[#1E293B] rounded-3xl shadow-2xl overflow-hidden z-50 py-3 animate-in fade-in zoom-in-95 duration-300">
                     {results.map((res, index) => (
                       <button
                         key={`${res.symbol}-${index}`}
                         onClick={() => handleSelectAsset(res)}
-                        className="w-full flex items-center justify-between px-6 py-4 hover:bg-primary/5 transition-colors text-left group"
+                        className="w-full flex items-center justify-between px-6 py-4 transition-all text-left group bg-[#1E293B] hover:bg-[#334155] hover:brightness-110"
                       >
-                        <div>
-                          <p className="font-black text-slate-900 text-sm group-hover:text-primary transition-colors">{res.symbol}</p>
-                          <p className="text-[10px] text-slate-400 font-bold truncate max-w-[150px] uppercase tracking-widest">{res.shortname}</p>
+                        <div className="min-w-0">
+                          <p className="font-bold text-[#F8FAFC] text-sm truncate group-hover:text-cyan-300 transition-colors">{res.symbol}</p>
+                          <p className="text-[10px] text-[#CBD5E1] font-semibold truncate max-w-[150px] uppercase tracking-widest">{res.shortname}</p>
                         </div>
-                        <span className="text-[10px] font-black px-3 py-1 bg-slate-100 rounded-xl text-slate-500 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold px-3 py-1 bg-[#1F2937] rounded-full text-[#E5E7EB] uppercase tracking-widest border border-[#334155]">
                           {res.quoteType}
                         </span>
                       </button>
@@ -163,17 +176,17 @@ export const Simulator = () => {
                 )}
               </div>
               {selectedAsset && (
-                <div className="flex items-center justify-between p-5 bg-primary/5 rounded-3xl border border-primary/10 shadow-inner">
+                <div className="flex items-center justify-between p-5 bg-emerald-100/80 rounded-3xl border border-emerald-300 shadow-inner">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-xs shadow-lg shadow-primary/20">
-                      {selectedAsset.symbol.substring(0, 2)}
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black text-xs shadow-lg shadow-emerald-500/30">
+                      {selectedAsset.symbol.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900">{selectedAsset.symbol}</p>
-                      <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{formatCurrency(selectedAsset.price, currency, fxRate, selectedAsset.currency === 'INR')}</p>
+                      <p className="text-sm font-black text-emerald-900">{selectedAsset.symbol}</p>
+                      <p className="text-[10px] text-emerald-700 font-black uppercase tracking-widest">{formatCurrency(selectedAsset.price, currency, fxRate, selectedAsset.currency === 'INR')}</p>
                     </div>
                   </div>
-                  <button onClick={reset} className="p-2 hover:bg-white/50 rounded-xl transition-colors text-slate-400 hover:text-negative">
+                  <button onClick={reset} className="p-2 hover:bg-emerald-200/80 rounded-xl transition-colors text-emerald-700 hover:text-emerald-900">
                     <X className="w-5 h-5" />
                   </button>
                 </div>

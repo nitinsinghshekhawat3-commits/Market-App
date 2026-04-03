@@ -172,12 +172,12 @@ async function startServer() {
           { name: 'Communication Services', symbol: 'XLC' },
         ],
         IN: [
-          { name: 'Information Technology', symbol: '^CNXIT' },
-          { name: 'Banking & Financial Services', symbol: '^NSEBANK' },
-          { name: 'Energy', symbol: '^NSEENRGY' },
-          { name: 'Pharmaceuticals', symbol: '^NSEPHARMA' },
-          { name: 'Automotive', symbol: '^NSEAUTO' },
-          { name: 'Consumer Goods', symbol: '^NSECG' },
+          { name: 'Information Technology', symbol: '^CNXIT', stocks: ['INFY.NS', 'TCS.NS', 'WIPRO.NS', 'TECHM.NS', 'HCLTECH.NS'] },
+          { name: 'Banking & Financial Services', symbol: '^NSEBANK', stocks: ['HDFC.NS', 'ICICIBANK.NS', 'AXISBANK.NS', 'KOTAKBANK.NS', 'SBIN.NS'] },
+          { name: 'Energy', symbol: '^CNXENERGY', stocks: ['RELIANCE.NS', 'NTPC.NS', 'POWERGRID.NS', 'ONGC.NS', 'BPCL.NS'] },
+          { name: 'Pharmaceuticals', symbol: '^CNXPHARMA', stocks: ['SUNPHARMA.NS', 'DRREDDY.NS', 'CIPLA.NS', 'LUPIN.NS', 'GLENMARK.NS'] },
+          { name: 'Automotive', symbol: '^CNXAUTO', stocks: ['MARUTI.NS', 'BAJAJFINSV.NS', 'M&M.NS', 'EICHERMOT.NS', 'MAHINDRA.NS'] },
+          { name: 'Consumer Goods', symbol: '^CNXFMCG', stocks: ['NESTLEIND.NS', 'BRITANNIA.NS', 'ITC.NS', 'MARICO.NS', 'HINDUNILVR.NS'] },
         ],
       };
 
@@ -187,15 +187,36 @@ async function startServer() {
       const quotes = await yf.quote(symbols);
       let quoteArray = Array.isArray(quotes) ? quotes : [quotes];
 
-      const data = definition.map((sector, idx) => {
+      const data = await Promise.all(definition.map(async (sector, idx) => {
         const q = quoteArray[idx] || {};
-        const change = q.regularMarketChangePercent ?? 0;
+        const indexChange = typeof q.regularMarketChangePercent === 'number' ? q.regularMarketChangePercent : NaN;
+
+        let topStocks = [];
+        if (sector.stocks && Array.isArray(sector.stocks) && sector.stocks.length > 0) {
+          try {
+            const stockQuotes = await yahooFinance.quote(sector.stocks.slice(0, 3));
+            const stocks = Array.isArray(stockQuotes) ? stockQuotes : [stockQuotes];
+            topStocks = sector.stocks.slice(0, 3).map((symbol, i) => ({
+              symbol,
+              change: stocks[i]?.regularMarketChangePercent ?? 0,
+            }));
+          } catch (err) {
+            console.error(`Failed to fetch top stocks for ${sector.name}:`, err.message);
+          }
+        }
+
+        const fallbackChange = topStocks.length
+          ? topStocks.reduce((sum, s) => sum + (s.change || 0), 0) / topStocks.length
+          : 0;
+
+        const change = Number.isFinite(indexChange) ? indexChange : fallbackChange;
+
         return {
           name: sector.name,
           change: Number(change.toFixed(2)),
           color: change >= 0 ? 'bg-primary' : 'bg-negative',
         };
-      });
+      }));
 
       res.json(data);
 

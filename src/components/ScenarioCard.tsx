@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus, ChevronDown, HelpCircle } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import { cn, formatCurrency } from '../lib/utils';
 
 interface ScenarioCardProps {
@@ -83,6 +84,7 @@ export const ScenarioCard: React.FC<ScenarioCardProps> = ({
     }
   };
 
+  const { theme } = useApp();
   const colors = getScenarioColor(scenario);
   const confidence = getConfidenceLevel(probability);
   const risk = getRiskTag(volatility);
@@ -90,12 +92,16 @@ export const ScenarioCard: React.FC<ScenarioCardProps> = ({
   const priceChangePercent = (priceChange / currentPrice) * 100;
   const action = getSuggestedAction(scenario);
 
+  const usedTextColor = theme === 'dark' ? 'text-slate-100' : colors.text;
+  const fieldLabelColor = theme === 'dark' ? 'text-slate-300' : 'text-slate-500';
+  const panelBg = theme === 'dark' ? 'bg-slate-800 border-slate-700' : `${colors.bg} ${colors.border}`;
+  const panelTextColor = theme === 'dark' ? 'text-slate-100' : colors.text;
+
   return (
     <div
       className={cn(
         'border-2 rounded-2xl p-5 transition-all cursor-pointer',
-        colors.bg,
-        colors.border,
+        panelBg,
         isExpanded && 'ring-2 ring-primary/50'
       )}
       onClick={onToggle}
@@ -111,7 +117,7 @@ export const ScenarioCard: React.FC<ScenarioCardProps> = ({
           {/* Content */}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h4 className={cn('text-lg font-bold uppercase', colors.text)}>
+              <h4 className={cn('text-lg font-bold uppercase', usedTextColor)}>
                 {scenario}
               </h4>
               {/* Risk Tag */}
@@ -123,12 +129,14 @@ export const ScenarioCard: React.FC<ScenarioCardProps> = ({
             {/* Price Target */}
             <div className="flex items-center gap-4 text-sm">
               <div>
-                <p className="text-slate-500 text-xs font-semibold">Target</p>
-                <p className="font-bold text-slate-900">{formatCurrency(priceTarget, currency as 'USD' | 'INR', fxRate, isINR)}</p>
+                <p className={cn('text-xs font-semibold', fieldLabelColor)}>Target</p>
+                <p className={cn('font-bold', theme === 'dark' ? 'text-slate-100' : 'text-slate-900')}>
+                  {formatCurrency(priceTarget, currency as 'USD' | 'INR', fxRate, isINR)}
+                </p>
               </div>
               <div>
-                <p className="text-slate-500 text-xs font-semibold">Change</p>
-                <p className={cn('font-bold', priceChange >= 0 ? 'text-emerald-600' : 'text-red-600')}>
+                <p className={cn('text-xs font-semibold', fieldLabelColor)}>Change</p>
+                <p className={cn('font-bold', priceChange >= 0 ? 'text-emerald-400' : 'text-red-400')}>
                   {priceChange >= 0 ? '+' : ''}{priceChangePercent.toFixed(1)}%
                 </p>
               </div>
@@ -158,16 +166,20 @@ export const ScenarioCard: React.FC<ScenarioCardProps> = ({
       </div>
 
       {/* Suggested Action */}
-      <div className="mt-3 pt-3 border-t border-white/50">
-        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Suggested Action</p>
-        <p className={cn('text-sm font-bold', colors.text)}>{action}</p>
+      <div className={cn('mt-3 pt-3 border-t', theme === 'dark' ? 'border-slate-700' : 'border-white/50')}>
+        <p className={cn('text-xs font-black uppercase tracking-widest mb-1', theme === 'dark' ? 'text-slate-300' : 'text-slate-400')}>
+          Suggested Action
+        </p>
+        <p className={cn('text-sm font-bold', panelTextColor)}>{action}</p>
       </div>
 
       {/* Expanded Reasoning */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-white/50">
-          <p className="text-sm font-semibold text-slate-700 mb-2">Why?</p>
-          <p className={cn('text-sm leading-relaxed', colors.text)}>
+        <div className={cn('mt-4 pt-4 border-t', theme === 'dark' ? 'border-slate-700' : 'border-white/50')}>
+          <p className={cn('text-sm font-semibold mb-2', theme === 'dark' ? 'text-slate-200' : 'text-slate-700')}>
+            Why?
+          </p>
+          <p className={cn('text-sm leading-relaxed', panelTextColor)}>
             {reasoning}
           </p>
         </div>

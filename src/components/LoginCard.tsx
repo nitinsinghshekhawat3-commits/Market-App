@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 export function LoginCard() {
+
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -105,13 +106,9 @@ export function LoginCard() {
         >
           {loading ? 'Processing...' : 'Create account'}
         </button>
-        <button
-          onClick={() => submitLogin('google')}
-          className="w-full rounded-xl bg-white/95 px-4 py-2 text-slate-900 font-semibold hover:brightness-95 active:scale-95 transition flex items-center justify-center gap-2"
-          disabled={loading}
-        >
-          <span className="text-lg">⛅</span> {loading ? 'Connecting...' : 'Continue with Google'}
-        </button>
+        <div className="w-full rounded-xl border border-cyan-300/70 bg-white/95 px-4 py-2 text-slate-900 font-semibold flex items-center justify-center">
+          <div id="google-signin-button" className="w-full"></div>
+        </div>
       </div>
 
       <div className="mt-8 text-sm text-white/70 flex items-center justify-between gap-3">

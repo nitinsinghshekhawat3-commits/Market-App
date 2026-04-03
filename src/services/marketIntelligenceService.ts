@@ -88,6 +88,34 @@ export function analyzeMarketStructure(
     institutional_bias = 'Bearish';
     confidence = 'High';
   }
+  // Medium uptrend indication (price + volume)
+  else if (priceChange > 0.7 && volumeRatio > 1.05) {
+    market_state = 'Trending Up';
+    institutional_bias = 'Bullish';
+    confidence = 'Medium';
+  }
+  // Medium downtrend indication (price + volume)
+  else if (priceChange < -0.7 && volumeRatio > 1.05) {
+    market_state = 'Trending Down';
+    institutional_bias = 'Bearish';
+    confidence = 'Medium';
+  }
+  // Accumulation when prices move sideways with moderate volume
+  else if (absPriceChange < 0.5 && volumeRatio > 1.05) {
+    market_state = 'Accumulation';
+    institutional_bias = 'Neutral';
+    confidence = 'Medium';
+  }
+  // Mild directional bias when price moves and volume is supportive
+  else if (priceChange > 0.3) {
+    market_state = 'Trending Up';
+    institutional_bias = 'Bullish';
+    confidence = 'Low';
+  } else if (priceChange < -0.3) {
+    market_state = 'Trending Down';
+    institutional_bias = 'Bearish';
+    confidence = 'Low';
+  }
   // Default neutral
   else {
     market_state = 'Neutral';

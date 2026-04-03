@@ -4,8 +4,14 @@
  * Get free API key: https://console.groq.com/keys
  */
 
-const GROQ_API_KEY = (process.env.VITE_GROQ_API_KEY || '') as string;
+const GROQ_API_KEY = (import.meta.env.VITE_GROQ_API_KEY || '') as string;
+const GROQ_MODEL = (import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile') as string;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+let aiCallCounter = 0;
+let aiWindowStart = Date.now();
+const MAX_AI_CALLS_PER_MINUTE = 20;
+let aiDisabledUntil = 0;
 
 async function callGroqAPI(prompt: string): Promise<string> {
   try {
@@ -13,6 +19,25 @@ async function callGroqAPI(prompt: string): Promise<string> {
       console.error('❌ GROQ_API_KEY not configured');
       return '';
     }
+
+    const now = Date.now();
+    if (now < aiDisabledUntil) {
+      console.warn('AI requests temporarily disabled until', new Date(aiDisabledUntil).toLocaleTimeString());
+      return '';
+    }
+
+    if (now - aiWindowStart > 60000) {
+      aiWindowStart = now;
+      aiCallCounter = 0;
+    }
+
+    if (aiCallCounter >= MAX_AI_CALLS_PER_MINUTE) {
+      aiDisabledUntil = now + 60000;
+      console.warn('AI rate limit reached; pausing requests for 60s');
+      return '';
+    }
+
+    aiCallCounter += 1;
 
     console.log('🔄 Calling Groq API...');
 
@@ -23,7 +48,7 @@ async function callGroqAPI(prompt: string): Promise<string> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: GROQ_MODEL,
         messages: [
           {
             role: 'user',
@@ -40,6 +65,10 @@ async function callGroqAPI(prompt: string): Promise<string> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Groq API error:', response.status, response.statusText, errorText);
+      if (response.status === 429) {
+        aiDisabledUntil = Date.now() + 60000; // temporary cooldown
+        console.warn('Too many requests, throttling AI for 60 seconds');
+      }
       return '';
     }
 
@@ -55,6 +84,9 @@ async function callGroqAPI(prompt: string): Promise<string> {
     return content;
   } catch (error) {
     console.error('❌ Groq API fetch error:', error);
+    if (error instanceof Error && /429|Too Many Requests/i.test(error.message)) {
+      aiDisabledUntil = Date.now() + 60000;
+    }
     return '';
   }
 }
@@ -62,48 +94,52 @@ async function callGroqAPI(prompt: string): Promise<string> {
 export async function analyzeAsset(symbol: string, data: any, currency: 'USD' | 'INR' = 'USD') {
   try {
     const currencySymbol = currency === 'INR' ? '₹' : '$';
-    const prompt = `You are an expert financial analyst with deep expertise in market dynamics, technical analysis, and fundamental research. Analyze the following asset with institutional-grade insights:
+    const prompt = `Analyze this financial asset and provide a professional assessment.
 
-Asset: ${symbol}
-Company: ${data.name}
-Current Price: ${currencySymbol}${data.price}
-24h Change: ${data.change}%
-Market Cap: ${currencySymbol}${data.marketCap}
-Trading Volume: ${data.volume}
-Business Profile: ${data.summary || 'Financial instrument'}
+ASSET DETAILS:
+- Symbol: ${symbol}
+- Name: ${data.name}
+- Current Price: ${currencySymbol}${data.price}
+- 24h Change: ${data.change}%
+- Market Cap: ${currencySymbol}${data.marketCap}
+- Volume: ${data.volume}
 
-Provide a comprehensive professional analysis considering:
-1. Current market sentiment and price momentum
-2. Risk/reward assessment with technical levels
-3. Institutional activity patterns
-4. Sector trends and macro factors
-5. 3-6 month outlook
-
-RESPOND ONLY WITH VALID JSON (no markdown, no code blocks):
+REQUIRED: Respond with ONLY a valid JSON object in this exact format:
 {
   "trend": "Bullish|Bearish|Neutral",
-  "riskScore": "Low|Medium|High",
-  "aiScore": <number 0-100>,
-  "summary": "<detailed 2-3 sentence analysis of current state and future trajectory>",
+  "riskScore": "Low|Medium|High", 
+  "aiScore": 0-100,
+  "summary": "2-3 sentence analysis",
   "suggestion": "Buy|Hold|Sell",
-  "pros": ["<benefit 1>", "<benefit 2>", "<benefit 3>"],
-  "cons": ["<risk 1>", "<risk 2>", "<risk 3>"],
-  "futurePlans": "<detailed outlook with specific factors and timeline>"
+  "pros": ["benefit 1", "benefit 2", "benefit 3"],
+  "cons": ["risk 1", "risk 2", "risk 3"],
+  "futurePlans": "outlook and timeline"
 }`;
 
     const text = await callGroqAPI(prompt);
 
     if (text) {
       try {
-        // Extract JSON even if there's extra text
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        // Extract JSON even if there's extra text - look for the first complete JSON object
+        const jsonMatch = text.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           console.log('✅ Asset Analysis Response:', parsed);
           return parsed;
         }
       } catch (e) {
-        console.warn('Parse error, using fallback:', e);
+        console.warn('Parse error, trying alternative parsing:', e);
+        // Try to find JSON between triple backticks if present
+        const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (codeBlockMatch) {
+          try {
+            const parsed = JSON.parse(codeBlockMatch[1]);
+            console.log('✅ Asset Analysis Response (from code block):', parsed);
+            return parsed;
+          } catch (e2) {
+            console.warn('Code block parse error:', e2);
+          }
+        }
         return getDefaultAnalysis();
       }
     }
@@ -135,29 +171,20 @@ export async function explainChart(symbol: string, chartData: any[], currency: '
     const support = lowPrice;
     const resistance = highPrice;
 
-    const prompt = `As a technical analysis expert, provide professional trading insights for ${symbol}.
+    const prompt = `Analyze this price chart for ${symbol}.
 
-CHART TECHNICAL DATA:
+TECHNICAL DATA:
 - Current Price: ${currencySymbol}${currentClose.toFixed(2)}
 - 30-Day Change: ${priceChange.toFixed(2)}%
-- Support Level: ${currencySymbol}${support.toFixed(2)}
-- Resistance Level: ${currencySymbol}${resistance.toFixed(2)}
-- High: ${currencySymbol}${highPrice.toFixed(2)}
-- Low: ${currencySymbol}${lowPrice.toFixed(2)}
+- Support: ${currencySymbol}${support.toFixed(2)}
+- Resistance: ${currencySymbol}${resistance.toFixed(2)}
 - Data Points: ${chartData.length}
 
-Analyze the technical setup considering:
-1. Trend structure and momentum
-2. Support/resistance zones and breakout levels
-3. Entry/exit signals for traders
-4. Risk management levels
-5. Probability of continuation vs reversal
-
-RESPOND ONLY WITH VALID JSON (no markdown):
+REQUIRED: Respond with ONLY a valid JSON object:
 {
-  "explanation": "<detailed technical analysis of price action and trends>",
-  "insight": "<specific trading opportunity or signal for next 1-2 weeks>",
-  "riskWarning": "<critical risk level to watch and recommended stop loss>",
+  "explanation": "technical analysis of price action",
+  "insight": "specific trading opportunity for next 1-2 weeks", 
+  "riskWarning": "critical risk level and stop loss",
   "trend": "Upward|Downward|Sideways"
 }`;
 
@@ -165,14 +192,24 @@ RESPOND ONLY WITH VALID JSON (no markdown):
 
     if (text) {
       try {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const jsonMatch = text.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           console.log('✅ Chart Explanation Response:', parsed);
           return parsed;
         }
       } catch (e) {
-        console.warn('Chart parse error, using fallback:', e);
+        console.warn('Chart parse error, trying alternative parsing:', e);
+        const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (codeBlockMatch) {
+          try {
+            const parsed = JSON.parse(codeBlockMatch[1]);
+            console.log('✅ Chart Explanation Response (from code block):', parsed);
+            return parsed;
+          } catch (e2) {
+            console.warn('Code block parse error:', e2);
+          }
+        }
         return getDefaultChartExplanation();
       }
     }
@@ -199,35 +236,26 @@ export async function simulateScenario(symbol: string, currentPrice: number, sce
       sideways: 'consolidation range with equilibrium'
     };
 
-    const prompt = `As a quantitative trading analyst, simulate a realistic 30-day price scenario for ${symbol}.
+    const prompt = `Generate a 30-day price scenario for ${symbol}.
 
 Current Price: ${currencySymbol}${currentPrice.toFixed(2)}
-Scenario Type: ${scenario.toUpperCase()} (${scenarioDescriptions[scenario as keyof typeof scenarioDescriptions] || 'unknown'})
+Scenario: ${scenario.toUpperCase()} (${scenarioDescriptions[scenario as keyof typeof scenarioDescriptions]})
 
-Generate a detailed scenario considering:
-1. Historical volatility patterns
-2. Realistic price targets based on technical levels
-3. Probability-weighted outcomes
-4. Key support/resistance zones
-5. Timeframe and risk/reward ratio
-
-Provide 7 realistic checkpoint values over 30 days (days 1, 5, 10, 15, 20, 25, 30).
-
-RESPOND ONLY WITH VALID JSON (no markdown):
+REQUIRED: Respond with ONLY a valid JSON object:
 {
-  "estimatedValue": <price at day 30>,
+  "estimatedValue": 30,
   "riskImpact": "Low|Medium|High",
-  "explanation": "<why this scenario is realistic based on technical and market factors>",
-  "bestCase": "<optimistic outcome with specific price target>",
-  "worstCase": "<pessimistic outcome with downside target>",
+  "explanation": "why this scenario is realistic",
+  "bestCase": "optimistic outcome with price target",
+  "worstCase": "pessimistic outcome with price target",
   "projectionData": [
     {"day": 1, "value": ${currentPrice}},
-    {"day": 5, "value": <realistic price>},
-    {"day": 10, "value": <realistic price>},
-    {"day": 15, "value": <realistic price>},
-    {"day": 20, "value": <realistic price>},
-    {"day": 25, "value": <realistic price>},
-    {"day": 30, "value": <realistic price>}
+    {"day": 5, "value": 0},
+    {"day": 10, "value": 0},
+    {"day": 15, "value": 0},
+    {"day": 20, "value": 0},
+    {"day": 25, "value": 0},
+    {"day": 30, "value": 0}
   ]
 }`;
 
@@ -236,15 +264,24 @@ RESPOND ONLY WITH VALID JSON (no markdown):
     
     if (text) {
       try {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const jsonMatch = text.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           console.log('✅ Scenario Response:', parsed);
           return parsed;
         }
       } catch (e) {
-        console.warn('Scenario parse error:', e, 'Response:', text.substring(0, 200));
-        return null;
+        console.warn('Scenario parse error, trying alternative parsing:', e);
+        const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (codeBlockMatch) {
+          try {
+            const parsed = JSON.parse(codeBlockMatch[1]);
+            console.log('✅ Scenario Response (from code block):', parsed);
+            return parsed;
+          } catch (e2) {
+            console.warn('Code block parse error:', e2);
+          }
+        }
       }
     }
 

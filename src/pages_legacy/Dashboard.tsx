@@ -7,7 +7,7 @@ import { getCompanyLogoUrl } from '../lib/logoMap';
 import { Link } from 'react-router-dom';
 
 export const Dashboard = () => {
-  const { watchlist, isPro } = useApp();
+  const { watchlist, isPro, theme } = useApp();
 
   const [trending, setTrending] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,8 +51,8 @@ export const Dashboard = () => {
   }, [activeTab]);
 
   return (
-    <div className="p-8 space-y-12">
-      <section>
+    <div className="transition-all duration-300 p-8 space-y-12">
+      <section className="">
         <div className="flex items-center justify-between mb-8 px-4">
           <h2 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
             <Globe className="w-8 h-8 text-primary" /> Global Markets
@@ -106,27 +106,12 @@ export const Dashboard = () => {
               </div>
             )}
           </section>
-
-          <section className="glass-dark rounded-[3rem] p-12 text-white relative overflow-hidden group">
-            <div className="relative z-10 max-w-lg">
-              <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary/10">
-                <BrainCircuit className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-4xl font-bold mb-6 leading-tight">AI Intelligence <br/>at your fingertips.</h3>
-              <p className="text-slate-400 text-lg mb-10 leading-relaxed">Get institutional-grade analysis for any asset worldwide using our advanced Gemini-powered engine.</p>
-              <button className="btn-primary-glass !px-10 !py-4 !text-base">
-                Try AI Analysis
-              </button>
-            </div>
-            <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full -mr-32 -mb-32 group-hover:bg-primary/20 transition-all duration-700" />
-            <div className="absolute left-1/2 top-0 w-64 h-64 bg-accent/10 blur-[100px] rounded-full group-hover:bg-accent/20 transition-all duration-700" />
-          </section>
         </div>
 
         <div className="space-y-10">
-          <section className="glass-card">
-            <h2 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-3">
-              <Star className="w-6 h-6 text-amber-400 fill-amber-400" /> Watchlist
+          <section className={cn('glass-card p-6 rounded-2xl', theme === 'dark' ? 'bg-gradient-to-b from-slate-950/90 via-slate-900/90 to-slate-800/80 border border-slate-600 shadow-[0_15px_35px_rgba(0,0,0,0.45)]' : 'bg-white/80 border border-white/60')}>
+            <h2 className={cn('text-xl font-bold mb-8 flex items-center gap-3', theme === 'dark' ? 'text-white' : 'text-slate-900')}>
+              <Star className="w-6 h-6 text-amber-300 fill-amber-300" /> Watchlist
             </h2>
             <div className="space-y-2">
               
@@ -147,16 +132,32 @@ export const Dashboard = () => {
             </div>
           </section>
 
-          <section className="glass-card">
+          <section className={cn('glass-card p-6 rounded-2xl', theme === 'dark' ? 'bg-gradient-to-b from-slate-900/85 via-slate-800/80 to-slate-700/80 border border-slate-600 shadow-[0_12px_30px_rgba(0,0,0,0.42)]' : 'bg-white/80 border border-white/60')}>
             <SectorPerformance />
           </section>
         </div>
       </div>
+
+      <section className="glass-dark rounded-[3rem] p-12 text-white relative overflow-hidden group lg:col-span-3">
+        <div className="relative z-10 w-full">
+          <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary/10">
+            <BrainCircuit className="w-8 h-8 text-primary" />
+          </div>
+          <h3 className="text-4xl font-bold mb-6 leading-tight">AI Intelligence <br/>at your fingertips.</h3>
+          <p className="text-slate-300 text-lg mb-10 leading-relaxed">Get institutional-grade analysis for any asset worldwide using our advanced Gemini-powered engine.</p>
+          <button className="relative rounded-xl px-10 py-4 text-base font-bold text-white bg-primary transition-all duration-300 shadow-[0_0_15px_rgba(16,185,129,0.45)] hover:shadow-[0_0_25px_rgba(16,185,129,0.8)] hover:-translate-y-0.5 focus:outline-none focus-visible:ring focus-visible:ring-emerald-200/60">
+            Try AI Analysis
+          </button>
+        </div>
+        <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full -mr-32 -mb-32 group-hover:bg-primary/20 transition-all duration-700" />
+        <div className="absolute left-1/2 top-0 w-64 h-64 bg-accent/10 blur-[100px] rounded-full group-hover:bg-accent/20 transition-all duration-700" />
+      </section>
+
     </div>
   );
 };
 const WatchlistItem = ({ symbol }: { symbol: string; key?: string }) => {
-  const { currency, fxRate } = useApp();
+  const { currency, fxRate, theme } = useApp();
   const [data, setData] = useState<any>(null);
   const [fallbackLogoUrl, setFallbackLogoUrl] = useState<string | null>(null);
   const [logoError, setLogoError] = useState(false);
@@ -182,7 +183,15 @@ const WatchlistItem = ({ symbol }: { symbol: string; key?: string }) => {
   const logoUrl = data.logoUrl || fallbackLogoUrl;
 
   return (
-    <Link to={`/asset/${symbol}`} className="flex items-center justify-between p-4 hover:bg-white/60 rounded-3xl transition-all group border border-transparent hover:border-white/50 hover:shadow-sm">
+    <Link
+      to={`/asset/${symbol}`}
+      className={cn(
+        'flex items-center justify-between p-4 rounded-3xl transition-all group border shadow-sm',
+        theme === 'dark'
+          ? 'bg-gradient-to-b from-slate-900/80 via-slate-850/80 to-slate-800/75 border-slate-700 hover:bg-slate-800/90 hover:border-slate-600'
+          : 'bg-white/40 hover:bg-white/60 border-transparent hover:border-white/50'
+      )}
+    >
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm overflow-hidden">
           {logoUrl && !logoError ? (

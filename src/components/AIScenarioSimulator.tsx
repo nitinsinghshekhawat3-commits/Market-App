@@ -7,7 +7,7 @@ import { analyzeMarketStructure, MarketIntelligence, getInstitutionalAnalysisPro
 import { searchAssets, getPopularAssets, Asset } from '../services/assetSearchService';
 
 export const AIScenarioSimulator: React.FC = () => {
-  const { currency, fxRate } = useApp();
+  const { currency, fxRate, theme } = useApp();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -22,6 +22,8 @@ export const AIScenarioSimulator: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [aiValidation, setAiValidation] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const aiValidationCalls = useRef(0);
+  const MAX_AI_VALIDATION_CALLS = 10;
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,26 +116,33 @@ export const AIScenarioSimulator: React.FC = () => {
       setShowDetails(false);
       
       // Get AI validation for the setup (optional enhancement)
-      try {
-        const validationPrompt = getInstitutionalAnalysisPrompt(
-          selectedAsset.symbol,
-          {
-            price: metrics.price,
-            priceChange: metrics.priceChange,
-            volatility: realVolatility,
-            volumeRatio: metrics.volumeRatio
-          },
-          intelligence
-        );
-        
-        // Call AI for validation (optional)
-        const aiResponse = await fetchAIValidation(validationPrompt);
-        if (aiResponse) {
-          setAiValidation(aiResponse);
+      if (aiValidationCalls.current < MAX_AI_VALIDATION_CALLS) {
+        try {
+          const validationPrompt = getInstitutionalAnalysisPrompt(
+            selectedAsset.symbol,
+            {
+              price: metrics.price,
+              priceChange: metrics.priceChange,
+              volatility: realVolatility,
+              volumeRatio: metrics.volumeRatio
+            },
+            intelligence
+          );
+
+          aiValidationCalls.current += 1;
+
+          // Call AI for validation (optional)
+          const aiResponse = await fetchAIValidation(validationPrompt);
+          if (aiResponse) {
+            setAiValidation(aiResponse);
+          }
+        } catch (aiError) {
+          console.warn('AI validation failed, using market structure analysis only:', aiError);
+          // Fallback to market structure analysis is already set
         }
-      } catch (aiError) {
-        console.warn('AI validation failed, using market structure analysis only:', aiError);
-        // Fallback to market structure analysis is already set
+      } else {
+        console.warn('AI validation call limit reached', aiValidationCalls.current);
+        setAiValidation(null);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to analyze market';
@@ -146,8 +155,9 @@ export const AIScenarioSimulator: React.FC = () => {
   };
 
   const fetchAIValidation = async (prompt: string): Promise<any> => {
-    const GROQ_API_KEY = (process.env.VITE_GROQ_API_KEY || '') as string;
-    
+    const GROQ_API_KEY = (import.meta.env.VITE_GROQ_API_KEY || '') as string;
+    const GROQ_MODEL = (import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile') as string;
+
     if (!GROQ_API_KEY) {
       return null;
     }
@@ -160,7 +170,7 @@ export const AIScenarioSimulator: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: GROQ_MODEL,
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.6,
           max_tokens: 512,
@@ -177,9 +187,15 @@ export const AIScenarioSimulator: React.FC = () => {
       const content = data.choices?.[0]?.message?.content || '';
       
       // Extract JSON from response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]);
+      }
+      
+      // Try code block extraction
+      const codeBlockMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (codeBlockMatch) {
+        return JSON.parse(codeBlockMatch[1]);
       }
       
       return null;
@@ -246,19 +262,34 @@ export const AIScenarioSimulator: React.FC = () => {
     return { label: 'Low Risk', color: 'text-emerald-600' };
   };
 
+  const getStateColorClass = (state: string) => {
+    if (/Bullish/i.test(state) || /Trending Up/i.test(state) || /Breakout/i.test(state)) {
+      return theme === 'dark' ? 'text-emerald-300' : 'text-emerald-600';
+    }
+    if (/Bearish/i.test(state) || /Trending Down/i.test(state) || /Breakdown/i.test(state)) {
+      return theme === 'dark' ? 'text-red-300' : 'text-red-600';
+    }
+    if (/Neutral/i.test(state) || /Accumulation/i.test(state) || /Sideways/i.test(state)) {
+      return theme === 'dark' ? 'text-amber-200' : 'text-amber-600';
+    }
+    return theme === 'dark' ? 'text-slate-100' : 'text-slate-900';
+  };
+
   const riskInfo = getRiskLabel(volatility);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h3 className="text-2xl font-bold text-slate-900 mb-2">Market Intelligence Engine</h3>
-        <p className="text-sm text-slate-500">Institutional-grade analysis of market structure and price action</p>
+      <div className={cn('rounded-2xl border-2 p-5 shadow-sm', theme === 'dark' ? 'border-emerald-400 bg-gradient-to-r from-emerald-950/80 via-emerald-900 to-black' : 'border-emerald-200 bg-gradient-to-r from-emerald-50 via-emerald-100 to-white')}>
+        <div className="inline-flex items-center gap-2 mb-3">
+          <span className={cn('inline-flex items-center uppercase tracking-wider text-xs font-bold rounded-full px-2 py-1', theme === 'dark' ? 'text-emerald-100 bg-emerald-700/30 border-emerald-400' : 'text-emerald-800 bg-emerald-100 border-emerald-200')}>AI POWERED</span>
+        </div>
+        <h3 className={cn('text-2xl font-extrabold leading-tight mb-2', theme === 'dark' ? 'text-emerald-200' : 'text-emerald-900')}>AI What-If Simulator</h3>
+        <p className={cn('text-sm font-medium', theme === 'dark' ? 'text-slate-200' : 'text-emerald-700')}>Test hypothetical market scenarios and see how they might impact your favorite assets.</p>
       </div>
-
       {/* Unified Search */}
       <div ref={containerRef} className="relative">
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Select Asset</label>
+        <label className={cn('block text-sm font-semibold mb-2', theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}>Select Asset</label>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
@@ -271,7 +302,7 @@ export const AIScenarioSimulator: React.FC = () => {
               setIsSearchOpen(true);
             }}
             onFocus={() => setIsSearchOpen(true)}
-            className="w-full bg-white/60 border border-white/80 rounded-2xl px-4 pl-10 py-3 text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            className={cn('w-full rounded-2xl px-4 pl-10 py-3 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all', theme === 'dark' ? 'bg-slate-700/60 border border-slate-600 text-slate-100 placeholder-slate-400' : 'bg-white border border-slate-300 text-slate-900')}
           />
           {searchQuery && (
             <button
@@ -279,54 +310,88 @@ export const AIScenarioSimulator: React.FC = () => {
                 setSearchQuery('');
                 searchInputRef.current?.focus();
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/50 rounded transition-all"
+              className={cn('absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-all', theme === 'dark' ? 'hover:bg-slate-600/50' : 'hover:bg-white/50')}
             >
-              <X className="w-4 h-4 text-slate-400" />
+              <X className={cn('w-4 h-4', theme === 'dark' ? 'text-slate-200' : 'text-slate-400')} />
             </button>
           )}
         </div>
 
         {/* Search Dropdown */}
         {isSearchOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl border border-white/80 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto">
+          <div className={cn("absolute top-full left-0 right-0 mt-2 rounded-2xl shadow-xl z-50 max-h-80 overflow-y-auto", theme === 'dark' ? 'bg-slate-950 border border-slate-700 text-slate-100' : 'bg-white border border-slate-200 text-slate-900 shadow-lg')}>
             {isSearching ? (
               <div className="px-4 py-6 text-center">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto text-slate-400" />
-                <p className="text-sm text-slate-500 mt-2">Searching...</p>
+                <Loader2 className="w-4 h-4 animate-spin mx-auto text-slate-300" />
+                <p className={cn("text-sm mt-2", theme === 'dark' ? 'text-slate-200' : 'text-slate-500')}>Searching...</p>
               </div>
             ) : searchResults.length > 0 ? (
-              <div className="py-2">
-                {searchResults.map(asset => (
-                  <button
-                    key={`${asset.symbol}-${asset.type}`}
-                    onClick={() => {
-                      setSelectedAsset(asset);
-                      setSearchQuery('');
-                      setIsSearchOpen(false);
-                    }}
-                    className={cn(
-                      'w-full text-left px-4 py-3 transition-all border-l-4 hover:bg-slate-50',
-                      selectedAsset?.symbol === asset.symbol
-                        ? 'border-l-primary bg-primary/5'
-                        : 'border-l-transparent'
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-slate-900">{asset.name}</p>
-                        <p className="text-xs text-slate-500">{asset.symbol}</p>
+              <div className="py-2 space-y-1">
+                {searchResults.map((asset) => {
+                  const isSelectedAsset = selectedAsset?.symbol === asset.symbol;
+                  return (
+                    <button
+                      key={`${asset.symbol}-${asset.type}`}
+                      onClick={() => {
+                        setSelectedAsset(asset);
+                        setSearchQuery('');
+                        setIsSearchOpen(false);
+                      }}
+                      className={cn(
+                        'w-full text-left px-4 py-3 transition-all border-l-4 rounded-xl',
+                        theme === 'dark'
+                          ? isSelectedAsset
+                            ? 'text-emerald-200 bg-emerald-900/30 border-emerald-400 hover:!bg-emerald-900/50 shadow-sm'
+                            : 'text-slate-100 bg-slate-900 border-slate-600 hover:!bg-emerald-900/30'
+                          : isSelectedAsset
+                            ? 'text-emerald-900 bg-emerald-100 border-emerald-500 hover:!bg-emerald-200 shadow-sm'
+                            : 'text-slate-900 bg-white border-slate-200 hover:!bg-emerald-100',
+                        isSelectedAsset ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent'
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p
+                            className={cn(
+                              'font-semibold truncate max-w-[200px] text-sm',
+                              theme === 'dark'
+                                ? isSelectedAsset
+                                  ? 'text-emerald-200'
+                                  : 'text-emerald-100'
+                                : 'text-slate-900'
+                            )}
+                          >
+                            {asset.name}
+                          </p>
+                          <p
+                            className={cn(
+                              'text-xs truncate max-w-[200px] text-slate-300',
+                              theme === 'dark'
+                                ? isSelectedAsset
+                                  ? 'text-emerald-300'
+                                  : 'text-emerald-200'
+                                : 'text-slate-500'
+                            )}
+                          >
+                            {asset.symbol}
+                          </p>
+                        </div>
+                        <span
+                          className={cn(
+                            'flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap',
+                            theme === 'dark'
+                              ? isSelectedAsset
+                                ? 'bg-emerald-800/80 text-emerald-100 border border-emerald-600'
+                                : 'bg-emerald-800/80 text-emerald-100 border border-emerald-600'
+                              : 'bg-slate-100 text-slate-700 border border-slate-200'
+                          )}
+                        >
+                          {asset.type === 'crypto' ? 'Crypto' : 'Stock'}
+                        </span>
                       </div>
-                      <span className={cn(
-                        'px-2 py-1 rounded text-xs font-semibold',
-                        asset.type === 'crypto'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
-                      )}>
-                        {asset.type === 'crypto' ? 'Crypto' : 'Stock'}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="px-4 py-6 text-center text-slate-500 text-sm">
@@ -338,9 +403,12 @@ export const AIScenarioSimulator: React.FC = () => {
 
         {/* Selected Asset Display */}
         {selectedAsset && !searchQuery && (
-          <div className="mt-2 px-3 py-2 bg-primary/10 rounded-xl border border-primary/20 flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-900">{selectedAsset.name} ({selectedAsset.symbol})</span>
-            <span className="text-xs font-medium text-slate-500">{selectedAsset.type === 'crypto' ? 'Crypto' : 'Stock'}</span>
+          <div className={cn("mt-2 px-3 py-2 rounded-xl border flex items-center justify-between", theme === 'dark' ? 'bg-black/70 border-emerald-500 text-emerald-100' : 'bg-emerald-100 border-emerald-200 text-emerald-800')}>
+            <div>
+              <p className={cn('text-sm font-semibold', theme === 'dark' ? 'text-emerald-100' : 'text-emerald-800')}>{selectedAsset.name} ({selectedAsset.symbol})</p>
+              <p className={cn('text-xs font-medium', theme === 'dark' ? 'text-emerald-300' : 'text-emerald-600')}>{selectedAsset.type === 'crypto' ? 'Crypto' : 'Stock'}</p>
+            </div>
+            <span className={cn('text-xs font-semibold px-2 py-1 rounded-full', theme === 'dark' ? 'bg-emerald-800/80 text-emerald-100' : 'bg-emerald-200 text-emerald-800')}>{selectedAsset.type === 'crypto' ? 'Crypto' : 'Stock'}</span>
           </div>
         )}
       </div>
@@ -359,24 +427,17 @@ export const AIScenarioSimulator: React.FC = () => {
       {/* Market Overview */}
       {currentPrice > 0 && (
         <div className="grid grid-cols-4 gap-3">
-          <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/80">
-            <p className="text-xs text-slate-500 font-semibold uppercase mb-1">Current Price</p>
-            <p className="text-lg font-bold text-slate-900">{formatPrice(currentPrice)}</p>
-          </div>
-          <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/80">
-            <p className="text-xs text-slate-500 font-semibold uppercase mb-1">24h Change</p>
-            <p className={cn('text-lg font-bold', priceChange > 0 ? 'text-emerald-600' : priceChange < 0 ? 'text-red-600' : 'text-slate-600')}>
-              {priceChange > 0 ? '+' : ''}{priceChange.toFixed(2)}%
-            </p>
-          </div>
-          <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/80">
-            <p className="text-xs text-slate-500 font-semibold uppercase mb-1">Volatility</p>
-            <p className="text-lg font-bold text-slate-900">{(volatility * 100).toFixed(1)}%</p>
-          </div>
-          <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/80">
-            <p className="text-xs text-slate-500 font-semibold uppercase mb-1">Volume Ratio</p>
-            <p className="text-lg font-bold text-slate-900">{volumeRatio.toFixed(2)}x</p>
-          </div>
+          {[
+            { label: 'Current Price', value: formatPrice(currentPrice), valueClass: '' },
+            { label: '24h Change', value: `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`, valueClass: priceChange > 0 ? 'text-emerald-600' : priceChange < 0 ? 'text-red-600' : (theme === 'dark' ? 'text-slate-200' : 'text-slate-600') },
+            { label: 'Volatility', value: `${(volatility * 100).toFixed(1)}%`, valueClass: '' },
+            { label: 'Volume Ratio', value: `${volumeRatio.toFixed(2)}x`, valueClass: '' }
+          ].map(item => (
+            <div key={item.label} className={cn('backdrop-blur-md p-4 rounded-2xl border', theme === 'dark' ? 'bg-slate-700/60 border-slate-600' : 'bg-white/60 border-white/80')}>
+              <p className={cn('text-xs font-semibold uppercase mb-1', theme === 'dark' ? 'text-slate-300' : 'text-slate-500')}>{item.label}</p>
+              <p className={cn('text-lg font-bold', item.valueClass || (theme === 'dark' ? 'text-slate-100' : 'text-slate-900'))}>{item.value}</p>
+            </div>
+          ))}
         </div>
       )}
 
@@ -392,100 +453,96 @@ export const AIScenarioSimulator: React.FC = () => {
           {/* Main Market State Card */}
           <div className={cn(
             'border-2 rounded-2xl p-6 transition-all cursor-pointer hover:shadow-lg',
-            marketIntelligence.market_state.includes('Bullish') || marketIntelligence.market_state === 'Trending Up' || marketIntelligence.market_state === 'Breakout Setup' 
-              ? 'bg-emerald-50 border-emerald-200' 
-              : marketIntelligence.market_state.includes('Bearish') || marketIntelligence.market_state === 'Trending Down' || marketIntelligence.market_state === 'Breakdown Risk'
-              ? 'bg-red-50 border-red-200'
-              : marketIntelligence.market_state === 'Accumulation'
-              ? 'bg-blue-50 border-blue-200'
-              : 'bg-amber-50 border-amber-200'
+            theme === 'dark'
+              ? 'bg-slate-800 border-slate-700 text-slate-100' 
+              : marketIntelligence.market_state.includes('Bullish') || marketIntelligence.market_state === 'Trending Up' || marketIntelligence.market_state === 'Breakout Setup' 
+                ? 'bg-emerald-50 border-emerald-200' 
+                : marketIntelligence.market_state.includes('Bearish') || marketIntelligence.market_state === 'Trending Down' || marketIntelligence.market_state === 'Breakdown Risk'
+                ? 'bg-red-50 border-red-200'
+                : marketIntelligence.market_state === 'Accumulation'
+                ? 'bg-emerald-50 border-emerald-200'
+                : 'bg-amber-50 border-amber-200'
           )}
           onClick={() => setShowDetails(!showDetails)}
           >
             {/* Header */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h4 className="text-xl font-bold text-slate-900 mb-1">
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+              <div className="flex-1 min-w-0">
+                <h4 className={cn('text-xl font-bold mb-1', getStateColorClass(marketIntelligence.market_state))}>
                   {marketIntelligence.market_state}
                 </h4>
-                <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                <p className={cn('text-sm leading-relaxed mb-3', theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>
+                  <span className={cn('font-semibold mr-2', getStateColorClass(marketIntelligence.market_state))}>
+                    {marketIntelligence.market_state} Setup:
+                  </span>
                   {marketIntelligence.reasoning}
                 </p>
               </div>
-              <div className="text-right ml-4">
-                <div className="mb-2">
-                  <span className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-semibold',
-                    marketIntelligence.confidence === 'High' ? 'bg-emerald-100 text-emerald-700' :
-                    marketIntelligence.confidence === 'Medium' ? 'bg-amber-100 text-amber-700' :
-                    'bg-slate-100 text-slate-700'
-                  )}>
-                    Confidence: {marketIntelligence.confidence}
-                  </span>
-                </div>
-                <div>
-                  <span className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-semibold',
-                    marketIntelligence.institutional_bias === 'Bullish' ? 'bg-emerald-100 text-emerald-700' :
-                    marketIntelligence.institutional_bias === 'Bearish' ? 'bg-red-100 text-red-700' :
-                    'bg-slate-100 text-slate-700'
-                  )}>
-                    Bias: {marketIntelligence.institutional_bias}
-                  </span>
-                </div>
+              <div className="flex flex-wrap gap-2 items-center text-right">
+                <span className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold',
+                  marketIntelligence.confidence === 'High' ? 'bg-emerald-100 text-emerald-700' :
+                  marketIntelligence.confidence === 'Medium' ? 'bg-amber-100 text-amber-700' :
+                  theme === 'dark' ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-700'
+                )}>
+                  Confidence: {marketIntelligence.confidence}
+                </span>
+                <span className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold',
+                  marketIntelligence.institutional_bias === 'Bullish' ? 'bg-emerald-100 text-emerald-700' :
+                  marketIntelligence.institutional_bias === 'Bearish' ? 'bg-red-100 text-red-700' :
+                  theme === 'dark' ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-700'
+                )}>
+                  Bias: {marketIntelligence.institutional_bias}
+                </span>
               </div>
             </div>
 
             {/* Key Levels */}
             <div className="grid grid-cols-3 gap-3 border-t border-white/50 pt-4">
               <div>
-                <p className="text-xs text-slate-600 font-semibold mb-1">Entry Zone</p>
-                <p className="text-sm font-semibold text-slate-900">{marketIntelligence.entry_zone}</p>
+                <p className={cn('text-xs font-semibold mb-1', theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>Entry Zone</p>
+                <p className={cn('text-sm font-semibold', theme === 'dark' ? 'text-slate-100' : 'text-slate-900')}>{marketIntelligence.entry_zone}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-600 font-semibold mb-1">Target Zone</p>
-                <p className="text-sm font-semibold text-slate-900">{marketIntelligence.target_zone}</p>
+                <p className={cn('text-xs font-semibold mb-1', theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>Target Zone</p>
+                <p className={cn('text-sm font-semibold', theme === 'dark' ? 'text-slate-100' : 'text-slate-900')}>{marketIntelligence.target_zone}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-600 font-semibold mb-1">Invalidation</p>
-                <p className="text-sm font-semibold text-slate-900">{marketIntelligence.invalidation}</p>
+                <p className={cn('text-xs font-semibold mb-1', theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>Invalidation</p>
+                <p className={cn('text-sm font-semibold', theme === 'dark' ? 'text-slate-100' : 'text-slate-900')}>{marketIntelligence.invalidation}</p>
               </div>
             </div>
           </div>
 
           {/* Market Drivers Detail */}
           {showDetails && (
-            <div className="grid grid-cols-2 gap-3 border-2 border-slate-200 rounded-2xl p-4">
-              <div className="bg-white/50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-slate-700 mb-1">Trend Strength</p>
-                <p className="text-sm text-slate-600">{marketIntelligence.market_drivers.trend_strength}</p>
-              </div>
-              <div className="bg-white/50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-slate-700 mb-1">Volume Signal</p>
-                <p className="text-sm text-slate-600">{marketIntelligence.market_drivers.volume_signal}</p>
-              </div>
-              <div className="bg-white/50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-slate-700 mb-1">Volatility State</p>
-                <p className="text-sm text-slate-600">{marketIntelligence.market_drivers.volatility_state}</p>
-              </div>
-              <div className="bg-white/50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-slate-700 mb-1">Momentum</p>
-                <p className="text-sm text-slate-600">{marketIntelligence.market_drivers.momentum}</p>
-              </div>
+            <div className={cn('grid grid-cols-2 gap-3 rounded-2xl p-4', theme === 'dark' ? 'border-2 border-slate-700' : 'border-2 border-slate-200')}>
+              {[
+                { label: 'Trend Strength', value: marketIntelligence.market_drivers.trend_strength },
+                { label: 'Volume Signal', value: marketIntelligence.market_drivers.volume_signal },
+                { label: 'Volatility State', value: marketIntelligence.market_drivers.volatility_state },
+                { label: 'Momentum', value: marketIntelligence.market_drivers.momentum }
+              ].map((item) => (
+                <div key={item.label} className={cn('p-3 rounded-lg', theme === 'dark' ? 'bg-slate-700/50' : 'bg-white/50')}>
+                  <p className={cn('text-xs font-semibold mb-1', theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}>{item.label}</p>
+                  <p className={cn('text-sm', theme === 'dark' ? 'text-slate-100' : 'text-slate-600')}>{item.value}</p>
+                </div>
+              ))}
             </div>
           )}
 
           {/* AI Validation (if available) */}
           {aiValidation && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-4">
-              <p className="text-xs font-semibold text-slate-700 mb-2">AI Setup Validation</p>
-              <p className="text-sm text-slate-600 mb-2">
+            <div className={cn('rounded-2xl p-4 border-2', theme === 'dark' ? 'bg-slate-800/60 border-slate-600' : 'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200')}>
+              <p className={cn('text-xs font-semibold mb-2', theme === 'dark' ? 'text-slate-200' : 'text-slate-700')}>AI Setup Validation</p>
+              <p className={cn('text-sm mb-2', theme === 'dark' ? 'text-slate-100' : 'text-slate-600')}>
                 <span className="font-semibold">Setup Valid:</span> {aiValidation.setup_valid ? 'Yes' : 'No'}
               </p>
-              <p className="text-sm text-slate-600 mb-2">
+              <p className={cn('text-sm mb-2', theme === 'dark' ? 'text-slate-100' : 'text-slate-600')}>
                 <span className="font-semibold">Primary Scenario:</span> {aiValidation.primary_scenario}
               </p>
-              <p className="text-sm text-slate-600">
+              <p className={cn('text-sm', theme === 'dark' ? 'text-slate-100' : 'text-slate-600')}>
                 <span className="font-semibold">Key Level:</span> {aiValidation.key_level}
               </p>
             </div>
@@ -498,8 +555,8 @@ export const AIScenarioSimulator: React.FC = () => {
       )}
 
       {/* Disclaimer */}
-      <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-        <p className="text-xs text-slate-600">
+      <div className={cn('p-4 rounded-2xl border', theme === 'dark' ? 'bg-slate-900/40 border-slate-700' : 'bg-slate-50 border-slate-200')}>
+        <p className={cn('text-xs', theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>
           <strong>Disclaimer:</strong> This analysis is based on technical structure and historical patterns. 
           It is not financial advice. Always conduct independent research and consult professionals before making investment decisions.
         </p>

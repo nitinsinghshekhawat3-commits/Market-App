@@ -253,7 +253,7 @@ const generateAIData = (title: string, category: string, isWatchlistNews: boolea
 };
 
 export const News = () => {
-  const { watchlist } = useApp();
+  const { watchlist, theme } = useApp();
   const [newsData, setNewsData] = React.useState<(any & { aiData?: AIData; isWatchlistNews?: boolean })[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [aiNewsEnabled, setAiNewsEnabled] = React.useState(false);
@@ -379,7 +379,12 @@ export const News = () => {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute top-8 left-8 px-5 py-2 bg-white/90 backdrop-blur-xl rounded-2xl text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-lg">
+                <div className={cn(
+                  "absolute top-8 left-8 px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg",
+                  theme === 'dark'
+                    ? "bg-[#1E293B]/95 border border-[#334155] text-[#E5E7EB]"
+                    : "bg-white/90 text-slate-900"
+                )}>
                   {item.category}
                 </div>
                 
@@ -666,15 +671,28 @@ export const News = () => {
                   disabled={!item.url}
                   className={cn(
                     "flex items-center gap-3 text-[10px] font-black uppercase tracking-widest group/btn transition-all",
-                    item.url ? "text-slate-900 hover:text-primary cursor-pointer" : "text-slate-300 cursor-not-allowed"
+                    item.url 
+                      ? (theme === 'dark' 
+                          ? "text-[#E5E7EB] hover:text-cyan-300 cursor-pointer" 
+                          : "text-slate-900 hover:text-primary cursor-pointer")
+                      : "text-slate-400 cursor-not-allowed"
                   )}
                 >
                   Read Full Article 
                   <div className={cn(
                     "p-2 rounded-lg transition-all",
-                    item.url ? "bg-slate-100 group-hover/btn:bg-primary group-hover/btn:text-white" : "bg-slate-100"
+                    item.url 
+                      ? (theme === 'dark' 
+                          ? "bg-[#1E293B] group-hover/btn:bg-cyan-500 group-hover/btn:text-white" 
+                          : "bg-slate-100 group-hover/btn:bg-primary group-hover/btn:text-white")
+                      : "bg-slate-600"
                   )}>
-                    <ArrowUpRight className={cn("w-4 h-4", !item.url && "text-slate-300")} />
+                    <ArrowUpRight className={cn(
+                      "w-4 h-4",
+                      theme === 'dark' 
+                        ? item.url ? 'text-slate-100' : 'text-slate-400' 
+                        : item.url ? 'text-slate-900' : 'text-slate-300'
+                    )} />
                   </div>
                 </button>
               </div>

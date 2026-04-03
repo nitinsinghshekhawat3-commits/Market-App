@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Zap, TrendingUp, BarChart3, Lock, Star, ChevronRight, Lightbulb } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useApp } from '../context/AppContext';
 import { SmartMoneyTracker } from './SmartMoneyTracker';
 import { AIScenarioSimulator } from './AIScenarioSimulator';
 
@@ -11,6 +12,7 @@ interface PremiumFeaturesModalProps {
 }
 
 export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOpen, onClose, isPro }) => {
+  const { theme } = useApp();
   const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
 
   const features = [
@@ -57,23 +59,23 @@ export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOp
 
       {/* Modal */}
       <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="relative w-full max-w-5xl bg-white/95 backdrop-blur-xl rounded-[3rem] border border-white/60 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className={cn("relative w-full max-w-5xl backdrop-blur-xl rounded-[3rem] border shadow-2xl max-h-[90vh] overflow-y-auto", theme === 'dark' ? 'bg-slate-900/95 border-slate-700' : 'bg-white/95 border-white/60')}>
           {/* Header */}
-          <div className="sticky top-0 bg-gradient-to-r from-white/95 to-slate-50/95 backdrop-blur-xl border-b border-white/40 px-8 py-8 flex items-center justify-between rounded-t-[3rem] z-10">
+          <div className={cn("sticky top-0 backdrop-blur-xl border-b px-8 py-8 flex items-center justify-between rounded-t-[3rem] z-10", theme === 'dark' ? 'bg-slate-900/95 border-slate-700' : 'bg-gradient-to-r from-white/95 to-slate-50/95 border-white/40')}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center">
                 <Star className="w-6 h-6 text-white fill-white" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-slate-900">Premium Features</h2>
-                <p className="text-sm text-slate-500 mt-1">Unlock advanced trading intelligence</p>
+                <h2 className={cn("text-3xl font-black", theme === 'dark' ? 'text-white' : 'text-slate-900')}>Premium Features</h2>
+                <p className={cn("text-sm mt-1", theme === 'dark' ? 'text-slate-300' : 'text-slate-500')}>Unlock advanced trading intelligence</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-3 hover:bg-white/60 rounded-2xl transition-all active:scale-95"
+              className={cn("p-3 rounded-2xl transition-all active:scale-95", theme === 'dark' ? 'hover:bg-slate-600/40 text-white' : 'hover:bg-white/60 text-slate-800')}
             >
-              <X className="w-6 h-6" />
+              <X className={cn("w-6 h-6", theme === 'dark' ? 'text-white' : 'text-slate-800')} />
             </button>
           </div>
 
@@ -102,12 +104,12 @@ export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOp
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-2xl font-bold text-slate-900">{selectedFeatureData.title}</h3>
+                        <h3 className={cn("text-2xl font-bold", theme === 'dark' ? 'text-white' : 'text-slate-900')}>{selectedFeatureData.title}</h3>
                         <span className="text-xs font-bold px-3 py-1.5 bg-primary/10 text-primary rounded-full">
                           {selectedFeatureData.badge}
                         </span>
                       </div>
-                      <p className="text-slate-600">{selectedFeatureData.description}</p>
+                      <p className={cn("", theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>{selectedFeatureData.description}</p>
                     </div>
                   </div>
 
@@ -118,7 +120,7 @@ export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOp
                       <p className="text-sm text-slate-400">This premium feature is under development</p>
                     </div>
                   ) : (
-                    <div className="bg-slate-50/50 rounded-3xl p-8 border border-slate-200">
+                    <div className={cn("rounded-3xl p-8 border", theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50 border-slate-200')}>
                       {selectedFeatureData.content}
                     </div>
                   )}
@@ -137,8 +139,8 @@ export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOp
                         'group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden',
                         'hover:shadow-lg active:scale-95',
                         feature.locked && !isPro
-                          ? 'border-slate-200 bg-white/30 opacity-60 cursor-not-allowed'
-                          : 'border-white/60 bg-white/60 hover:bg-white hover:border-primary/40'
+                          ? theme === 'dark' ? 'border-slate-700 bg-slate-800/30 opacity-60 cursor-not-allowed' : 'border-slate-200 bg-white/30 opacity-60 cursor-not-allowed'
+                          : theme === 'dark' ? 'border-slate-700 bg-slate-800/60 hover:bg-slate-800 hover:border-primary/40' : 'border-white/60 bg-white/60 hover:bg-white hover:border-primary/40'
                       )}
                     >
                       {/* Gradient background */}
@@ -163,19 +165,19 @@ export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOp
 
                         {/* Title & Badge */}
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-bold text-slate-900">{feature.title}</h3>
+                          <h3 className={cn("font-bold", theme === 'dark' ? 'text-white' : 'text-slate-900')}>{feature.title}</h3>
                           {feature.locked && !isPro && (
                             <Lock className="w-4 h-4 text-slate-400" />
                           )}
                         </div>
 
                         {/* Badge */}
-                        <span className="inline-block text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg mb-3">
+                        <span className={cn("inline-block text-xs font-bold px-2.5 py-1 rounded-lg mb-3", theme === 'dark' ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')}>
                           {feature.badge}
                         </span>
 
                         {/* Description */}
-                        <p className="text-sm text-slate-600 leading-relaxed mb-4">{feature.description}</p>
+                        <p className={cn("text-sm leading-relaxed mb-4", theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>{feature.description}</p>
 
                         {/* Arrow */}
                         {!feature.locked && (
@@ -188,12 +190,12 @@ export const PremiumFeaturesModal: React.FC<PremiumFeaturesModalProps> = ({ isOp
 
                 {/* Pro Information */}
                 {!isPro && (
-                  <div className="bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary/20 rounded-2xl p-6">
+                  <div className={cn("border-2 rounded-2xl p-6", theme === 'dark' ? 'bg-primary/10 border-primary/20' : 'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20')}>
                     <div className="flex items-center gap-4">
                       <Star className="w-6 h-6 text-primary fill-primary flex-shrink-0" />
                       <div>
-                        <p className="font-bold text-slate-900 mb-1">Upgrade to Pro</p>
-                        <p className="text-sm text-slate-600">
+                        <p className={cn("font-bold mb-1", theme === 'dark' ? 'text-white' : 'text-slate-900')}>Upgrade to Pro</p>
+                        <p className={cn("text-sm", theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>
                           Unlock all premium features including Portfolio Optimizer and Advanced Analytics
                         </p>
                       </div>

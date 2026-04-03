@@ -57,7 +57,7 @@ Provide your response in valid JSON format only:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'),
         messages: [
           {
             role: 'user',

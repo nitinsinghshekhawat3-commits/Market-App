@@ -10,7 +10,7 @@ import { TrendingUp, TrendingDown, Shield, Zap, BarChart2, Info, Star, Check, Pl
 
 export const AssetDetail = () => {
   const { symbol } = useParams<{ symbol: string }>();
-  const { currency, fxRate, watchlist, addToWatchlist, removeFromWatchlist, isPro } = useApp();
+  const { currency, fxRate, watchlist, addToWatchlist, removeFromWatchlist, isPro, theme } = useApp();
   const [data, setData] = useState<any>(null);
   const [analysis, setAnalysis] = useState<any>(null);
   const [chartExplanation, setChartExplanation] = useState<any>(null);
@@ -66,11 +66,11 @@ export const AssetDetail = () => {
   const logoUrl = data?.quote?.logoUrl || fallbackLogoUrl;
 
   if (loading) return (
-    <div className="p-8 space-y-8 animate-pulse">
-      <div className="h-20 bg-slate-100 rounded-3xl" />
+    <div className={cn("p-8 space-y-8 animate-pulse", theme === 'dark' ? 'bg-slate-950' : '')}>
+      <div className={cn("h-20 rounded-3xl", theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100')} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 h-96 bg-slate-100 rounded-3xl" />
-        <div className="h-96 bg-slate-100 rounded-3xl" />
+        <div className={cn("lg:col-span-2 h-96 rounded-3xl", theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100')} />
+        <div className={cn("h-96 rounded-3xl", theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100')} />
       </div>
     </div>
   );
@@ -185,11 +185,11 @@ export const AssetDetail = () => {
   };
 
   return (
-    <div className="p-8 space-y-10">
+    <div className={cn("p-8 space-y-10", theme === 'dark' ? 'bg-slate-950' : '')}>
       {/* Header Panel */}
-      <div className="glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+      <div className={cn("glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-8", theme === 'dark' ? 'bg-slate-900/80 border-slate-700/50 text-white' : '')}>
         <div className="flex items-center gap-8">
-          <div className="w-20 h-20 rounded-3xl bg-white/80 flex items-center justify-center text-3xl font-black text-primary shadow-sm overflow-hidden">
+          <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center text-3xl font-black shadow-sm overflow-hidden", theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-white/80 text-primary')}>
             {logoUrl && !logoError ? (
               <img
                 src={logoUrl}
@@ -204,16 +204,16 @@ export const AssetDetail = () => {
           </div>
           <div>
             <div className="flex items-center gap-4">
-              <h1 className="text-4xl font-black text-slate-900 tracking-tight">{symbol}</h1>
-              <span className="text-[10px] font-black px-3 py-1.5 bg-slate-100 rounded-xl text-slate-500 uppercase tracking-widest">{quote.quoteType}</span>
+              <h1 className={cn("text-4xl font-black tracking-tight", theme === 'dark' ? 'text-white' : 'text-slate-900')}>{symbol}</h1>
+              <span className={cn("text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest", theme === 'dark' ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-500')}>{quote.quoteType}</span>
             </div>
-            <p className="text-slate-500 font-bold text-lg mt-1">{quote.longName || quote.shortName}</p>
+            <p className={cn("font-bold text-lg mt-1", theme === 'dark' ? 'text-slate-400' : 'text-slate-500')}>{quote.longName || quote.shortName}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-10">
           <div className="text-right">
-            <p className="text-4xl font-black text-slate-900 tracking-tight">
+            <p className={cn("text-4xl font-black tracking-tight", theme === 'dark' ? 'text-white' : 'text-slate-900')}>
               {formatCurrency(quote.regularMarketPrice, currency, fxRate, isINR)}
             </p>
             <p className={cn(
@@ -228,7 +228,7 @@ export const AssetDetail = () => {
             onClick={() => isWatched ? removeFromWatchlist(symbol!) : addToWatchlist(symbol!)}
             className={cn(
               "p-5 rounded-3xl border transition-all duration-300 active:scale-90 shadow-sm",
-              isWatched ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-white/80 border-white/50 text-slate-400 hover:text-slate-600"
+              isWatched ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : theme === 'dark' ? "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200" : "bg-white/80 border-white/50 text-slate-400 hover:text-slate-600"
             )}
           >
             {isWatched ? <Check className="w-7 h-7" /> : <Plus className="w-7 h-7" />}
@@ -239,16 +239,16 @@ export const AssetDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Chart Section */}
         <div className="lg:col-span-2 space-y-10">
-          <div className="glass-card">
+          <div className={cn("glass-card", theme === 'dark' ? 'bg-slate-900/80 border-slate-700/50' : '')}>
             <div className="flex items-center justify-between mb-10">
-              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+              <h2 className={cn("text-2xl font-black flex items-center gap-3", theme === 'dark' ? 'text-white' : 'text-slate-900')}>
                 <BarChart2 className="w-6 h-6 text-primary" /> Market Performance
               </h2>
               <div className="flex items-center gap-4">
                 <button 
                   onClick={handleExplainChart}
                   disabled={explainingChart}
-                  className="btn-glass !text-[10px] !px-4 !py-2 !rounded-xl"
+                  className={cn("btn-glass !text-[10px] !px-4 !py-2 !rounded-xl", theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : '')}
                 >
                   {explainingChart ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
                   Explain Chart
@@ -258,13 +258,13 @@ export const AssetDetail = () => {
                 <div className="relative">
                   <button
                     onClick={() => setShowChartTypeMenu(!showChartTypeMenu)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/50 backdrop-blur-md rounded-xl border border-white/50 text-[10px] font-black text-slate-700 hover:bg-white/70 transition-all active:scale-90"
+                    className={cn("flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] font-black transition-all active:scale-90", theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : 'bg-white/50 backdrop-blur-md border-white/50 text-slate-700 hover:bg-white/70')}
                   >
                     Chart Type
                     <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showChartTypeMenu && "rotate-180")} />
                   </button>
                   {showChartTypeMenu && (
-                    <div className="absolute top-full right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/60 shadow-lg z-50 overflow-hidden">
+                    <div className={cn("absolute top-full right-0 mt-2 rounded-2xl border shadow-lg z-50 overflow-hidden", theme === 'dark' ? 'bg-slate-800/95 border-slate-700' : 'bg-white/95 border-white/60 backdrop-blur-xl')}>
                       {(['candlestick', 'line', 'bar', 'smart-trend'] as const).map(type => (
                         <button
                           key={type}
@@ -273,10 +273,10 @@ export const AssetDetail = () => {
                             setShowChartTypeMenu(false);
                           }}
                           className={cn(
-                            "w-full px-6 py-2.5 text-left text-[11px] font-bold transition-colors border-b border-white/30 last:border-b-0",
+                            "w-full px-6 py-2.5 text-left text-[11px] font-bold transition-colors border-b last:border-b-0",
                             chartType === type
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-slate-700 hover:bg-slate-50'
+                              ? theme === 'dark' ? 'bg-primary/20 text-primary border-slate-700' : 'bg-primary/10 text-primary border-white/30'
+                              : theme === 'dark' ? 'text-slate-300 hover:bg-slate-700 border-slate-700' : 'text-slate-700 hover:bg-slate-50 border-white/30'
                           )}
                         >
                           {type === 'smart-trend' ? 'Smart Trend' : type.charAt(0).toUpperCase() + type.slice(1)}
@@ -287,14 +287,14 @@ export const AssetDetail = () => {
                 </div>
 
                 {/* Timeframe Selector */}
-                <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-xl border border-white/50 gap-1">
+                <div className={cn("flex p-1 rounded-xl border gap-1", theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-white/50 backdrop-blur-md border-white/50')}>
                   {(['1M', '3M', '1Y', '5Y'] as const).map(t => (
                     <button 
                       key={t} 
                       onClick={() => setSelectedPeriod(t)}
                       className={cn(
                         "px-4 py-1.5 rounded-lg text-[10px] font-black transition-all active:scale-90",
-                        selectedPeriod === t ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-600"
+                        selectedPeriod === t ? theme === 'dark' ? "bg-slate-700 text-primary shadow-sm" : "bg-white text-primary shadow-sm" : theme === 'dark' ? "text-slate-400 hover:text-slate-200" : "text-slate-400 hover:text-slate-600"
                       )}
                     >
                       {t}
@@ -315,22 +315,22 @@ export const AssetDetail = () => {
           </div>
 
           {chartExplanation && (
-            <div className="glass-card !bg-white/60 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className={cn("glass-card space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700", theme === 'dark' ? '!bg-slate-900/80 border-slate-700/50' : '!bg-white/60')}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm">
-                    <MessageSquare className="w-6 h-6" />
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm", theme === 'dark' ? 'bg-primary/20' : 'bg-primary/10')}>
+                    <MessageSquare className={cn("w-6 h-6", theme === 'dark' ? 'text-primary' : 'text-primary')} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900">Chart Analysis</h3>
-                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">AI-generated explanation</p>
+                    <h3 className={cn("text-xl font-black", theme === 'dark' ? 'text-white' : 'text-slate-900')}>Chart Analysis</h3>
+                    <p className={cn("text-[10px] font-black uppercase tracking-widest", theme === 'dark' ? 'text-slate-400' : 'text-slate-500')}>AI-generated explanation</p>
                   </div>
                 </div>
                 <div className={cn(
                   "px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm",
                   chartExplanation.trend === 'Upward' ? "bg-primary text-white" :
                   chartExplanation.trend === 'Downward' ? "bg-negative text-white" :
-                  "bg-slate-200 text-slate-600"
+                  theme === 'dark' ? "bg-slate-700 text-slate-300" : "bg-slate-200 text-slate-600"
                 )}>
                   {chartExplanation.trend} Trend
                 </div>
@@ -338,25 +338,25 @@ export const AssetDetail = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <div className="md:col-span-2 space-y-6">
-                  <p className="text-slate-600 leading-relaxed font-medium">
+                  <p className={cn("leading-relaxed font-medium", theme === 'dark' ? 'text-slate-300' : 'text-slate-600')}>
                     {chartExplanation.explanation}
                   </p>
-                  <div className="flex items-start gap-4 p-6 bg-white/80 rounded-[2rem] border border-white/50 shadow-sm">
-                    <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                      <Lightbulb className="w-5 h-5 text-amber-500" />
+                  <div className={cn("flex items-start gap-4 p-6 rounded-[2rem] border shadow-sm", theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-white/80 border-white/50')}>
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", theme === 'dark' ? 'bg-amber-900/50 text-amber-400' : 'bg-amber-100 text-amber-500')}>
+                      <Lightbulb className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Trading Insight</p>
-                      <p className="text-sm text-slate-700 leading-relaxed font-bold">{chartExplanation.insight}</p>
+                      <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", theme === 'dark' ? 'text-slate-400' : 'text-slate-400')}>Trading Insight</p>
+                      <p className={cn("text-sm leading-relaxed font-bold", theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}>{chartExplanation.insight}</p>
                     </div>
                   </div>
                 </div>
-                <div className="p-8 bg-negative/5 rounded-[2.5rem] border border-negative/10 space-y-6 shadow-inner">
-                  <div className="flex items-center gap-3 text-negative">
+                <div className={cn("p-8 rounded-[2.5rem] border space-y-6 shadow-inner", theme === 'dark' ? 'bg-negative/10 border-negative/20' : 'bg-negative/5 border-negative/10')}>
+                  <div className={cn("flex items-center gap-3", theme === 'dark' ? 'text-rose-400' : 'text-negative')}>
                     <AlertTriangle className="w-6 h-6" />
                     <span className="text-[10px] font-black uppercase tracking-widest">Risk Warning</span>
                   </div>
-                  <p className="text-sm text-negative/80 leading-relaxed font-bold">
+                  <p className={cn("text-sm leading-relaxed font-bold", theme === 'dark' ? 'text-rose-300/80' : 'text-negative/80')}>
                     {chartExplanation.riskWarning}
                   </p>
                 </div>
@@ -371,9 +371,9 @@ export const AssetDetail = () => {
               { label: 'Volume', value: formatCompactNumber(quote.regularMarketVolume) },
               { label: '52W High', value: formatCurrency(quote.fiftyTwoWeekHigh, currency, fxRate, isINR) },
             ].map(metric => (
-              <div key={metric.label} className="glass-card !p-6 !rounded-[2rem]">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{metric.label}</p>
-                <p className="text-xl font-black text-slate-900 tracking-tight">{metric.value}</p>
+              <div key={metric.label} className={cn("glass-card !p-6 !rounded-[2rem]", theme === 'dark' ? 'bg-slate-900/80 border-slate-700/50' : '')}>
+                <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2", theme === 'dark' ? 'text-slate-400' : 'text-slate-400')}>{metric.label}</p>
+                <p className={cn("text-xl font-black tracking-tight", theme === 'dark' ? 'text-white' : 'text-slate-900')}>{metric.value}</p>
               </div>
             ))}
           </div>
@@ -381,7 +381,7 @@ export const AssetDetail = () => {
 
         {/* AI Analysis Section */}
         <div className="space-y-10">
-          <div className="glass-dark rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+          <div className={cn("rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group", theme === 'dark' ? 'glass-dark text-white' : 'glass-dark text-white')}>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-black flex items-center gap-3">
@@ -390,7 +390,7 @@ export const AssetDetail = () => {
                 <button 
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className="text-[10px] font-black px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all disabled:opacity-50 border border-white/10"
+                  className={cn("text-[10px] font-black px-4 py-2 rounded-xl transition-all disabled:opacity-50 border", theme === 'dark' ? 'bg-white/10 hover:bg-white/20 border-white/10 text-white' : 'bg-white/10 hover:bg-white/20 border-white/10 text-white')}
                 >
                   {analyzing ? 'Analyzing...' : 'Refresh'}
                 </button>
@@ -401,12 +401,15 @@ export const AssetDetail = () => {
                   <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto border border-white/10">
                     <BrainCircuit className="w-10 h-10 text-slate-400" />
                   </div>
-                  <p className="text-slate-400 text-sm leading-relaxed font-medium">Run AI analysis to get deep insights into this asset's performance and trends.</p>
+                  <p className="text-slate-300 text-sm leading-relaxed font-medium">Run AI analysis to get deep insights into this asset's performance and trends.</p>
                   <button 
                     onClick={handleAnalyze}
-                    className="btn-primary-glass w-full !py-4"
+                    className="btn-primary-glass w-full !py-4 rounded-[2rem] shadow-lg hover:shadow-xl transition-all relative overflow-hidden"
                   >
                     Generate Insights
+                    {theme === 'dark' && (
+                      <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-cyan-400 rounded-full opacity-80" />
+                    )}
                   </button>
                 </div>
               ) : analyzing ? (

@@ -211,7 +211,14 @@ async function getAIEnhancedInsights(
   bearish: { reasoning: string; marketDrivers: string; keyRisk: string; outlook: string };
   sideways: { reasoning: string; marketDrivers: string; keyRisk: string; outlook: string };
 }> {
-  const GROQ_API_KEY = (process.env.VITE_GROQ_API_KEY || '') as string;
+  const GROQ_API_KEY = (typeof window !== 'undefined'
+    ? (import.meta.env.VITE_GROQ_API_KEY || '')
+    : (process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY || '')
+  ) as string;
+  const GROQ_MODEL = (typeof window !== 'undefined'
+    ? (import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile')
+    : (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile')
+  ) as string;
   const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
   if (!GROQ_API_KEY) {
@@ -260,7 +267,7 @@ Respond with ONLY valid JSON (no markdown, no code blocks):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: GROQ_MODEL,
         messages: [
           {
             role: 'user',

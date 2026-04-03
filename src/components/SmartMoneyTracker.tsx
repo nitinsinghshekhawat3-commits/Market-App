@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, AlertCircle, Clock, Zap, Filter, RefreshCw } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useApp } from '../context/AppContext';
 import { fetchSmartMoneyActivity, SmartMoneySignal } from '../services/smartMoneyService';
 
 export const SmartMoneyTracker: React.FC = () => {
+  const { theme } = useApp();
   const [signals, setSignals] = useState<SmartMoneySignal[]>([]);
   const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
   const [lastCheckedTime, setLastCheckedTime] = useState<Date | null>(null);
@@ -156,19 +158,19 @@ export const SmartMoneyTracker: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={cn('space-y-6', theme === 'dark' ? 'text-slate-100' : 'text-slate-900')}>
       {/* Header with LIVE indicator and control buttons */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-              <Zap className="w-7 h-7 text-amber-400" />
+            <h3 className={cn('text-2xl font-bold flex items-center gap-3', theme === 'dark' ? 'text-white' : 'text-slate-900')}>
+              <Zap className={cn('w-7 h-7', theme === 'dark' ? 'text-amber-300' : 'text-amber-400')} />
               Smart Money Tracker
             </h3>
             {!loading && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 rounded-full">
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                <span className="text-xs font-bold text-blue-700 uppercase tracking-widest">
+              <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-full', theme === 'dark' ? 'bg-slate-700' : 'bg-blue-100')}>
+                <div className={cn('w-2 h-2 rounded-full', theme === 'dark' ? 'bg-emerald-400' : 'bg-blue-500')} />
+                <span className={cn('text-xs font-bold uppercase tracking-widest', theme === 'dark' ? 'text-slate-200' : 'text-blue-700')}>
                   Last checked: {lastCheckedTime ? (() => {
                     const diff = Date.now() - lastCheckedTime.getTime();
                     const minutes = Math.floor(diff / 60000);
@@ -180,7 +182,7 @@ export const SmartMoneyTracker: React.FC = () => {
               </div>
             )}
           </div>
-          <p className="text-sm text-slate-500">Manually check for whale transactions, volume spikes & momentum signals</p>
+          <p className={cn('text-sm', theme === 'dark' ? 'text-slate-300' : 'text-slate-500')}>Manually check for whale transactions, volume spikes & momentum signals</p>
         </div>
 
         {/* Control buttons */}
@@ -191,7 +193,9 @@ export const SmartMoneyTracker: React.FC = () => {
             className={cn(
               'flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 whitespace-nowrap',
               loading
-                ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                ? theme === 'dark'
+                  ? 'bg-slate-700 text-slate-300 cursor-not-allowed'
+                  : 'bg-slate-200 text-slate-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/30 hover:shadow-xl'
             )}
           >
@@ -201,16 +205,21 @@ export const SmartMoneyTracker: React.FC = () => {
           
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="p-3 rounded-2xl bg-white/60 border border-white/80 hover:bg-white/80 transition-all active:scale-95"
+            className={cn(
+              'p-3 rounded-2xl transition-all active:scale-95',
+              theme === 'dark'
+                ? 'bg-slate-700 border border-slate-500 hover:bg-slate-600'
+                : 'bg-white/60 border border-white/80 hover:bg-white/80'
+            )}
           >
-            <Filter className="w-5 h-5 text-slate-600" />
+            <Filter className={cn('w-5 h-5', theme === 'dark' ? 'text-slate-200' : 'text-slate-600')} />
           </button>
         </div>
       </div>
 
       {/* Filter buttons */}
       {showFilters && (
-        <div className="flex gap-2 p-3 bg-white/40 rounded-2xl border border-white/60">
+        <div className={cn('flex gap-2 p-3 rounded-2xl border', theme === 'dark' ? 'bg-slate-700/40 border-slate-600' : 'bg-white/40 border-white/60')}>
           {(['all', 'crypto', 'stocks'] as const).map((cat) => (
             <button
               key={cat}

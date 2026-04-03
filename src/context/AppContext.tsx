@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Currency = 'USD' | 'INR';
 
+type ThemeMode = 'light' | 'dark';
+
 interface AppContextType {
   currency: Currency;
   setCurrency: (c: Currency) => void;
@@ -11,10 +13,13 @@ interface AppContextType {
   removeFromWatchlist: (symbol: string) => void;
   isPro: boolean;
   upgradeToPro: (name: string, email: string) => void;
-  updateUserProfile: (name: string, gender: 'male' | 'female') => void;
+  updateUserProfile: (name: string, gender: 'male' | 'female' | 'other') => void;
   uploadAvatar: (file: File) => Promise<boolean>;
   removeAvatar: () => void;
-  user: { name: string; email: string; gender?: 'male' | 'female'; avatar?: string } | null;
+  logout: () => void;
+  user: { name: string; email: string; gender?: 'male' | 'female' | 'other'; avatar?: string; phone?: string; provider?: string; id?: string } | null;
+  theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
   showPremiumModal: boolean;
   setShowPremiumModal: (show: boolean) => void;
 }
@@ -25,6 +30,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrency] = useState<Currency>('USD');
   const [fxRate, setFxRate] = useState(83.0);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  const preferred = typeof window !== 'undefined' ? (window.localStorage.getItem('marketstock_theme') as ThemeMode | null) : null;
+  const system = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const initialTheme = (preferred === 'light' || preferred === 'dark' ? preferred : system) || 'light';
+  const [theme, setTheme] = useState<ThemeMode>(initialTheme);
 
   // Detect user's currency based on browser locale
   useEffect(() => {
@@ -52,13 +62,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('aura_watchlist');
     return saved ? JSON.parse(saved) : ['AAPL', 'BTC-USD', 'RELIANCE.NS'];
   });
-  const [user, setUser] = useState<{ name: string; email: string; gender?: 'male' | 'female'; avatar?: string } | null>(() => {
+  const [user, setUser] = useState<{ name: string; email: string; gender?: 'male' | 'female' | 'other'; avatar?: string; phone?: string; provider?: string; id?: string } | null>(() => {
     if (typeof window === 'undefined') return null;
-    const saved = localStorage.getItem('aura_user');
+    const saved = localStorage.getItem('marketstock_user_data');
     return saved ? JSON.parse(saved) : null;
   });
 
   const isPro = !!user;
+
+  // Listen for localStorage changes (for login/logout)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'marketstock_user_data') {
+        if (e.newValue) {
+          setUser(JSON.parse(e.newValue));
+        } else {
+          setUser(null);
+        }
+      }
+    };
+
+    // Also check for direct localStorage changes (not through storage event)
+    const checkUserData = () => {
+      const saved = localStorage.getItem('marketstock_user_data');
+      const currentUser = saved ? JSON.parse(saved) : null;
+      if (JSON.stringify(currentUser) !== JSON.stringify(user)) {
+        setUser(currentUser);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Check every second for localStorage changes (for same-tab updates)
+    const interval = setInterval(checkUserData, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [user]);
 
   useEffect(() => {
     fetch('/api/fx')
@@ -75,14 +117,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (user) {
-      localStorage.setItem('aura_user', JSON.stringify(user));
+      localStorage.setItem('marketstock_user_data', JSON.stringify(user));
     }
   }, [user]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    window.localStorage.setItem('marketstock_theme', theme);
+
+    document.documentElement.classList.remove('theme-light', 'theme-dark');
+    document.documentElement.classList.add(`theme-${theme}`);
+
+    // Auto-night logic only applies when no explicit pref
+    const hasUserChoice = !!localStorage.getItem('marketstock_theme');
+    if (!hasUserChoice) {
+      const hour = new Date().getHours();
+      if (hour >= 19 || hour < 6) {
+        setTheme('dark');
+      }
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (user && !user.avatar) {
-      const savedAvatar = localStorage.getItem('aura_user_avatar');
+      const savedAvatar = localStorage.getItem('marketstock_user_avatar');
       if (savedAvatar) {
         setUser({ ...user, avatar: savedAvatar });
       }
@@ -103,9 +162,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUser({ name, email, gender: 'female' });
   };
 
-  const updateUserProfile = (name: string, gender: 'male' | 'female') => {
+  const updateUserProfile = (name: string, gender: 'male' | 'female' | 'other') => {
     if (user) {
       setUser({ ...user, name, gender });
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('marketstock_user', JSON.stringify({ ...user, name, gender }));
+      }
     }
   };
 
@@ -132,7 +194,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (user) {
           setUser({ ...user, avatar: base64String });
           if (typeof window !== 'undefined') {
-            localStorage.setItem('aura_user_avatar', base64String);
+            localStorage.setItem('marketstock_user_avatar', base64String);
           }
         }
       };
@@ -148,8 +210,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       setUser({ ...user, avatar: undefined });
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('aura_user_avatar');
+        localStorage.removeItem('marketstock_user_avatar');
       }
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('marketstock_user_token');
+      localStorage.removeItem('marketstock_user_data');
+      localStorage.removeItem('marketstock_user_avatar');
     }
   };
 
@@ -166,7 +237,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateUserProfile,
       uploadAvatar,
       removeAvatar,
+      logout,
       user,
+      theme,
+      setTheme,
       showPremiumModal,
       setShowPremiumModal
     }}>
