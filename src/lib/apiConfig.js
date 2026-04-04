@@ -48,7 +48,7 @@ export const API_ENDPOINTS = {
   sentiment: '/api/global-sentiment',
   
   // AI analysis
-  aiAnalyze: '/api/ai',
+  aiAnalyze: '/api/ai/analyze',
 };
 
 // Fetch data from API with error handling

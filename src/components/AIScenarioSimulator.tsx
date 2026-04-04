@@ -155,35 +155,49 @@ export const AIScenarioSimulator: React.FC = () => {
   };
 
   const fetchAIValidation = async (prompt: string): Promise<any> => {
+    const GROQ_API_KEY = (import.meta.env.VITE_GROQ_API_KEY || '') as string;
+    const GROQ_MODEL = (import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile') as string;
+
+    if (!GROQ_API_KEY) {
+      return null;
+    }
+
     try {
-      const response = await fetch('/api/ai', {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.6,
+          max_tokens: 512,
+          top_p: 0.9,
+          stream: false,
+        })
       });
 
       if (!response.ok) {
-        console.warn('AI endpoint returned non-OK:', response.status);
         return null;
       }
 
       const data = await response.json();
-      const content = data.text || data.analysis || '';
-
-      if (!content) return null;
-
+      const content = data.choices?.[0]?.message?.content || '';
+      
+      // Extract JSON from response
       const jsonMatch = content.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]);
       }
-
+      
+      // Try code block extraction
       const codeBlockMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
       if (codeBlockMatch) {
         return JSON.parse(codeBlockMatch[1]);
       }
-
+      
       return null;
     } catch (error) {
       console.warn('AI validation fetch failed:', error);
