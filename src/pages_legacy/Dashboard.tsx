@@ -29,16 +29,32 @@ export const Dashboard = () => {
           // Fetch crypto data
           const cryptoIds = ['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple', 'polkadot'];
           const response = await Promise.all(
-            cryptoIds.map(id => fetch(`/api/crypto/${id}`).then(res => res.json()).catch(() => null))
+            cryptoIds.map(async (id) => {
+              try {
+                const res = await fetch(`/api/crypto/${id}`);
+                if (!res.ok) {
+                  console.error('Crypto fetch failed:', id, res.status, await res.text());
+                  return null;
+                }
+                return await res.json();
+              } catch (err) {
+                console.error('Crypto fetch network error:', id, err);
+                return null;
+              }
+            })
           );
-          setTrending(response.filter(r => r).map(r => ({
-            symbol: r.id.toUpperCase(),
-            shortName: r.name,
-            regularMarketPrice: r.market_data?.current_price?.usd || 0,
-            regularMarketChangePercent: r.market_data?.price_change_percentage_24h || 0,
-            currency: 'USD',
-            quoteType: 'CRYPTOCURRENCY'
-          })));
+
+          setTrending(response
+            .filter((r) => r && r.market_data && r.id)
+            .map((r) => ({
+              symbol: r.id.toUpperCase(),
+              shortName: r.name,
+              regularMarketPrice: r.market_data.current_price?.usd || 0,
+              regularMarketChangePercent: r.market_data.price_change_percentage_24h || 0,
+              currency: 'USD',
+              quoteType: 'CRYPTOCURRENCY'
+            }))
+          );
         }
         
         setLoading(false);
