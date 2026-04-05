@@ -157,10 +157,10 @@ export function AdvancedLogin() {
     setSuccess('');
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+      const endpoint = '/api/auth';
       const payload = isLogin
-        ? { email: formData.email, password: formData.password }
-        : { name: formData.name, email: formData.email, password: formData.password };
+        ? { action: 'login', email: formData.email, password: formData.password }
+        : { action: 'signup', name: formData.name, email: formData.email, password: formData.password };
 
       const response = await fetch(endpoint, {
         method: 'POST',

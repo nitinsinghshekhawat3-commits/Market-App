@@ -404,12 +404,13 @@ export const verifyOAuthToken = async (
   userData: GoogleUser | AppleUser
 ): Promise<any> => {
   try {
-    const response = await fetch(`/api/auth/${provider}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+const response = await fetch('/api/auth', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: provider,
         token,
         userData,
       }),
