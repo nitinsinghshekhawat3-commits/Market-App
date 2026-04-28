@@ -22,4 +22,4 @@ View your app in AI Studio: https://ai.studio/apps/0a6a660d-bf40-43cd-b85b-bf50e
 =======
 # Market-App
 AI-powered financial intelligence platform with real-time market data, advanced charts, and institutional-grade insights.
->>>>>>> a5c74cded13a8caf5ef3f60e37dea283db4e77c9
+
