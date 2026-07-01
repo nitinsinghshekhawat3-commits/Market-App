@@ -1,18 +1,5 @@
 // Vercel serverless function for currency conversion (FX)
-let yahooFinance = null;
-
-async function getYahooFinance() {
-  if (!yahooFinance) {
-    try {
-      const YahooFinance = (await import('yahoo-finance2')).default;
-      yahooFinance = new YahooFinance();
-    } catch (err) {
-      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
-      throw err;
-    }
-  }
-  return yahooFinance;
-}
+import YahooFinance from 'yahoo-finance2';
 
 function setCORS(res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -34,8 +21,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const yf = await getYahooFinance();
-    const fx = await yf.quote("USDINR=X");
+    const yf = new YahooFinance();
+    const fx = await yf.quote("USDINR=X", { timeout: 8000 });
     res.json({ rate: fx.regularMarketPrice || 83.0 });
   } catch (error) {
     console.error("FX API Error:", error.message);

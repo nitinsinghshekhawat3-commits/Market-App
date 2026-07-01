@@ -1,18 +1,5 @@
 // Vercel serverless function for sector performance with market cap and top movers
-let yahooFinance = null;
-
-async function getYahooFinance() {
-  if (!yahooFinance) {
-    try {
-      const YahooFinance = (await import('yahoo-finance2')).default;
-      yahooFinance = new YahooFinance();
-    } catch (err) {
-      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
-      throw err;
-    }
-  }
-  return yahooFinance;
-}
+import YahooFinance from 'yahoo-finance2';
 
 function setCORS(res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -34,7 +21,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const yf = await getYahooFinance();
+    const yf = new YahooFinance();
     const { country = 'US', period = '1d' } = req.query;
 
     const sectorDefinitions = {

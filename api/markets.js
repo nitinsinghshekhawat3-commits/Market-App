@@ -1,18 +1,5 @@
 // Vercel serverless function for global markets
-let yahooFinance = null;
-
-async function getYahooFinance() {
-  if (!yahooFinance) {
-    try {
-      const YahooFinance = (await import('yahoo-finance2')).default;
-      yahooFinance = new YahooFinance();
-    } catch (err) {
-      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
-      throw err;
-    }
-  }
-  return yahooFinance;
-}
+import YahooFinance from 'yahoo-finance2';
 
 function setCORS(res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -34,9 +21,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const yf = await getYahooFinance();
+    const yf = new YahooFinance();
     const symbols = ["^GSPC", "^IXIC", "^NSEI", "BTC-USD", "ETH-USD"];
-    const quotes = await yf.quote(symbols);
+    const quotes = await yf.quote(symbols, { timeout: 10000 });
 
     if (Array.isArray(quotes)) {
       res.json(quotes);

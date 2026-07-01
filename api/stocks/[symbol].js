@@ -1,20 +1,5 @@
 // Vercel serverless function for stock data
-import axios from 'axios';
-
-let yahooFinance = null;
-
-async function getYahooFinance() {
-  if (!yahooFinance) {
-    try {
-      const YahooFinance = (await import('yahoo-finance2')).default;
-      yahooFinance = new YahooFinance();
-    } catch (err) {
-      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
-      throw err;
-    }
-  }
-  return yahooFinance;
-}
+import YahooFinance from 'yahoo-finance2';
 
 function setCORS(res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -41,15 +26,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Symbol is required' });
     }
 
-    const yf = await getYahooFinance();
-    const quote = await yf.quote(symbol);
+    const yf = new YahooFinance();
+    const quote = await yf.quote(symbol, { timeout: 10000 });
     const history = await yf.chart(symbol, {
       period1: "2023-01-01",
+      timeout: 10000,
     });
 
     let logoUrl = null;
     try {
-      const summary = await yf.quoteSummary(symbol, { modules: ['summaryDetail'] });
+      const summary = await yf.quoteSummary(symbol, { 
+        modules: ['summaryDetail'],
+        timeout: 5000
+      });
       if (summary && summary.summaryDetail && summary.summaryDetail.logoUrl) {
         logoUrl = summary.summaryDetail.logoUrl;
       }
@@ -60,7 +49,7 @@ export default async function handler(req, res) {
     res.json({ quote: { ...quote, logoUrl }, history });
 
   } catch (error) {
-    console.error("Stock API Error:", error);
-    res.status(500).json({ error: "Failed to fetch stock data" });
+    console.error("Stock API Error:", error.message);
+    res.status(500).json({ error: "Failed to fetch stock data", details: error.message });
   }
 }

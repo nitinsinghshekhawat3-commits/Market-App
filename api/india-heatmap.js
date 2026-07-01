@@ -1,18 +1,5 @@
 // Vercel serverless function for Indian stock heatmap data
-let yahooFinance = null;
-
-async function getYahooFinance() {
-  if (!yahooFinance) {
-    try {
-      const YahooFinance = (await import('yahoo-finance2')).default;
-      yahooFinance = new YahooFinance();
-    } catch (err) {
-      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
-      throw err;
-    }
-  }
-  return yahooFinance;
-}
+import YahooFinance from 'yahoo-finance2';
 
 function setCORS(res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -46,7 +33,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const yf = await getYahooFinance();
+    const yf = new YahooFinance();
     const sectorData = {};
 
     // Fetch data for each sector in parallel
@@ -54,7 +41,7 @@ export default async function handler(req, res) {
       Object.entries(INDIAN_SECTORS).map(async ([sectorName, symbols]) => {
         try {
           // Fetch quotes for all stocks in sector in one go (bulk), this is more reliable and faster
-          const allQuotes = await yf.quote(symbols);
+          const allQuotes = await yf.quote(symbols, { timeout: 10000 });
           const quotes = Array.isArray(allQuotes) ? allQuotes : [allQuotes];
 
           // Format data
@@ -82,7 +69,7 @@ export default async function handler(req, res) {
               .slice(0, 25 - stocks.length);
             for (const sym of missing) {
               try {
-                const quote = await yf.quote(sym);
+                const quote = await yf.quote(sym, { timeout: 5000 });
                 if (quote && quote.regularMarketPrice) {
                   stocks.push({
                     symbol: sym.replace('.NS', ''),

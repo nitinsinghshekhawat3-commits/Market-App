@@ -1,18 +1,5 @@
 // Vercel serverless function for search autocomplete
-let yahooFinance = null;
-
-async function getYahooFinance() {
-  if (!yahooFinance) {
-    try {
-      const YahooFinance = (await import('yahoo-finance2')).default;
-      yahooFinance = new YahooFinance();
-    } catch (err) {
-      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
-      throw err;
-    }
-  }
-  return yahooFinance;
-}
+import YahooFinance from 'yahoo-finance2';
 
 function setCORS(res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -39,12 +26,12 @@ export default async function handler(req, res) {
       return res.json([]);
     }
 
-    const yf = await getYahooFinance();
-    const results = await yf.search(q);
+    const yf = new YahooFinance();
+    const results = await yf.search(q, { timeout: 10000 });
     res.json(results.quotes || []);
 
   } catch (error) {
     console.error("Search API Error:", error.message);
-    res.status(500).json({ error: "Failed to search" });
+    res.status(500).json({ error: "Failed to search", details: error.message });
   }
 }

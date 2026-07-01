@@ -1,18 +1,5 @@
 // Vercel serverless function for global sentiment
-let yahooFinance = null;
-
-async function getYahooFinance() {
-  if (!yahooFinance) {
-    try {
-      const YahooFinance = (await import('yahoo-finance2')).default;
-      yahooFinance = new YahooFinance();
-    } catch (err) {
-      console.error('[ERROR] Failed to load Yahoo Finance:', err.message);
-      throw err;
-    }
-  }
-  return yahooFinance;
-}
+import YahooFinance from 'yahoo-finance2';
 
 function setCORS(res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -34,7 +21,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const yf = await getYahooFinance();
+    const yf = new YahooFinance();
     const countryIndices = [
       { country: "USA", symbol: "^GSPC", indexName: "S&P 500" },
       { country: "India", symbol: "^NSEI", indexName: "NIFTY 50" },
@@ -42,7 +29,7 @@ export default async function handler(req, res) {
     ];
 
     const symbols = countryIndices.map((c) => c.symbol);
-    const quotes = await yf.quote(symbols);
+    const quotes = await yf.quote(symbols, { timeout: 10000 });
 
     const results = countryIndices.map((item) => {
       const quote = Array.isArray(quotes) ? quotes.find((q) => q.symbol === item.symbol) : quotes;
