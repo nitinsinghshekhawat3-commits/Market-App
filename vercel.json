@@ -11,14 +11,6 @@
     "GROQ_API_KEY": "@groq_api_key",
     "GROQ_MODEL": "@groq_model"
   },
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "cleanUrls": true,
+  "trailingSlash": false
 }
