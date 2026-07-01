@@ -111,7 +111,7 @@ export const Sidebar = () => {
           <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
             <Globe className="text-white w-6 h-6" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-text-rich max-sm:text-base whitespace-nowrap">Aura <span className="text-primary">Intel</span></span>
+          <span className="text-xl font-bold tracking-tight text-text-rich max-sm:text-base whitespace-nowrap">Market <span className="text-primary">App</span></span>
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-2 max-sm:px-3 overflow-y-auto">
